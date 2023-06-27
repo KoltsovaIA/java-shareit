@@ -1,7 +1,7 @@
 package ru.practicum.shareit.item.repository;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.platform.commons.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.IncorrectParameterException;
@@ -14,10 +14,10 @@ import java.util.*;
 @Slf4j
 @Service
 public class ItemRepositoryImpl implements ItemRepository {
+    private final Map<Integer, Item> items = new HashMap<>();
     @Autowired
     private UserService userService;
-    private final Map<Integer, Item> items = new HashMap<>();
-    private int id = 0;
+    private static int id = 0;
 
     @Override
     public Item createItem(Item item) {
@@ -58,7 +58,8 @@ public class ItemRepositoryImpl implements ItemRepository {
         }
         Item oldItem = getItemById(itemId);
         if (!Objects.equals(item.getOwner(), oldItem.getOwner())) {
-            throw new ItemNotFoundException("Обновить вещь может только её владелец.");
+            throw new ItemNotFoundException("Обновить вещь с id " + itemId + " может только пользователь с id " +
+                    oldItem.getOwner().getId());
         }
         if (item.getName() == null) {
             item.setName(oldItem.getName());
@@ -109,10 +110,11 @@ public class ItemRepositoryImpl implements ItemRepository {
     @Override
     public List<Item> searchItem(String text) {
         ArrayList<Item> itemsList = new ArrayList<>();
-        if (!StringUtils.isBlank(text)) {
+        if (StringUtils.isNotBlank(text)) {
             for (Item value : items.values()) {
-                if ((value.getDescription().toLowerCase().contains(text.toLowerCase()) ||
-                        value.getName().toLowerCase().contains(text.toLowerCase())) && value.getAvailable()) {
+                if ((StringUtils.containsIgnoreCase(value.getDescription(), text) ||
+                        StringUtils.containsIgnoreCase(value.getName(), text)) &&
+                        Boolean.TRUE.equals(value.getAvailable())) {
                     itemsList.add(value);
                 }
             }

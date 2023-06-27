@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item.service;
 
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
@@ -7,13 +8,9 @@ import ru.practicum.shareit.item.repository.ItemRepository;
 import java.util.List;
 
 @Service
-
+@AllArgsConstructor
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
-
-    public ItemServiceImpl(ItemRepository itemRepository) {
-        this.itemRepository = itemRepository;
-    }
 
     @Override
     public Item createItem(Item item) {
