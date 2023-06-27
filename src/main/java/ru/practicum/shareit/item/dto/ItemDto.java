@@ -18,7 +18,6 @@ public class ItemDto {
     private String description;
     @NotNull(message = "При создании новой вещи необходимо указать статус бронирования.")
     private Boolean available;
-    @NotBlank(message = "При создании новой вещи необходимо указать её владельца.")
     private User owner;
     private ItemRequest request;
 }

@@ -1,7 +1,6 @@
 package ru.practicum.shareit.item;
 
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.service.ItemService;
@@ -21,7 +20,7 @@ public class ItemController {
     private final UserService userService;
 
     @PostMapping
-    public ItemDto createItem (@Valid @RequestHeader(USER_ID_HEADER) Integer userId, @RequestBody ItemDto itemDto) {
+    public ItemDto createItem(@RequestHeader(USER_ID_HEADER) Integer userId, @Valid @RequestBody ItemDto itemDto) {
         itemDto.setOwner(userService.getUserById(userId));
         return itemToDto(itemService.createItem(dtoToItem(itemDto)));
     }

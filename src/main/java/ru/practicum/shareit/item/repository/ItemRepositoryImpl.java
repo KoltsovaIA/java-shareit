@@ -4,11 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exception.IncorrectParameterException;
 import ru.practicum.shareit.item.exception.ItemNotFoundException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.service.UserService;
 
+import javax.validation.Valid;
 import java.util.*;
 
 @Slf4j
@@ -20,8 +20,8 @@ public class ItemRepositoryImpl implements ItemRepository {
     private static int id = 0;
 
     @Override
-    public Item createItem(Item item) {
-        checkItem(item);
+    public Item createItem(@Valid Item item) {
+        userService.getUserById(item.getOwner().getId());
         item.setId(getNewId());
         items.put(item.getId(), Item.builder()
                 .id(item.getId())
@@ -73,7 +73,7 @@ public class ItemRepositoryImpl implements ItemRepository {
         if (item.getRequest() == null) {
             item.setRequest(oldItem.getRequest());
         }
-        checkItem(item);
+        userService.getUserById(item.getOwner().getId());
         items.replace(itemId, item);
         log.info("Обновлена вещь " + item.getName());
         return item;
@@ -123,28 +123,8 @@ public class ItemRepositoryImpl implements ItemRepository {
         return itemsList;
     }
 
-    private void checkItem(Item item) {
-        if (item.getOwner() == null) {
-            throw new IncorrectParameterException("Владелец вещи не может быть не указан.");
-        }
-        userService.getUserById(item.getOwner().getId());
-        if (item.getAvailable() == null) {
-            throw new IncorrectParameterException("Статус доступности вещи не может быть не указан.");
-        }
-        if (StringUtils.isBlank(item.getName())) {
-            throw new IncorrectParameterException("Название вещи не может быть не указано.");
-        }
-        if (StringUtils.isBlank(item.getDescription())) {
-            throw new IncorrectParameterException("Описание вещи не может быть не заполнено.");
-        }
-    }
-
-    public int getNewId() {
+    public static int getNewId() {
         return ++id;
-    }
-
-    public int getLastId() {
-        return id;
     }
 
     public void itemIdIsExist(int id) {

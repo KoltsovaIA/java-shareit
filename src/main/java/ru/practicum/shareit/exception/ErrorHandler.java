@@ -47,9 +47,9 @@ public class ErrorHandler {
         return new ErrorResponse("Произошла непредвиденная ошибка.");
     }
 
-    @ExceptionHandler
+    @ExceptionHandler({MethodArgumentNotValidException.class, ValidateException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleArgumentNotValidException(final MethodArgumentNotValidException e) {
+    public ErrorResponse handleArgumentNotValidException(Throwable e) {
         return new ErrorResponse(e.getMessage());
     }
 }

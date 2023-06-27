@@ -1,24 +1,24 @@
 package ru.practicum.shareit.user.repository;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.platform.commons.util.StringUtils;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.user.exception.EmailAlreadyExistException;
-import ru.practicum.shareit.exception.IncorrectParameterException;
 import ru.practicum.shareit.user.exception.UserNotFoundException;
 import ru.practicum.shareit.user.model.User;
 
+import javax.validation.Valid;
 import java.util.*;
 
 @Repository
 @Slf4j
 public class UserRepositoryImpl implements UserRepository {
-    private final Map<Integer, User> users = new HashMap<>();
+    private static final String USER_WITH_ID = "Пользователь с id ";
     private static int id = 0;
+    private final Map<Integer, User> users = new HashMap<>();
+
 
     @Override
-    public User createUser(User user) {
-        checkUser(user);
+    public User createUser(@Valid User user) {
         users.forEach((key, value) -> {
             if (value.getEmail().equals(user.getEmail())) {
                 throw new EmailAlreadyExistException("Пользователь с электронной почтой " +
@@ -48,9 +48,9 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public User updateUserById(User user) {
+    public User updateUserById(@Valid User user) {
         if (!users.containsKey(user.getId())) {
-            throw new UserNotFoundException("Пользователь с id " + id + " не найден.");
+            throw new UserNotFoundException(USER_WITH_ID + id + " не найден.");
         }
         User oldUser = getUserById(user.getId());
         if (user.getName() == null) {
@@ -59,7 +59,6 @@ public class UserRepositoryImpl implements UserRepository {
         if (user.getEmail() == null) {
             user.setEmail(oldUser.getEmail());
         }
-        checkUser(user);
         users.forEach((key, value) -> {
             if (value.getEmail().equals(user.getEmail()) && !value.getEmail().equals(oldUser.getEmail())) {
                 throw new EmailAlreadyExistException("Пользователь с электронной почтой " +
@@ -75,10 +74,10 @@ public class UserRepositoryImpl implements UserRepository {
     public void deleteUserById(int id) {
         userIdIsExist(id);
         if (!users.containsKey(id)) {
-            throw new UserNotFoundException("Пользователь с id " + id + " не найден!");
+            throw new UserNotFoundException(USER_WITH_ID + id + " не найден!");
         }
         users.remove(id);
-        log.info("Пользователь с id " + id + " удален.");
+        log.info(USER_WITH_ID + id + " удален.");
     }
 
     @Override
@@ -95,24 +94,8 @@ public class UserRepositoryImpl implements UserRepository {
         return usersList;
     }
 
-    public int getNewId() {
+    public static int getNewId() {
         return ++id;
-    }
-
-    public int getLastId() {
-        return id;
-    }
-
-    private void checkUser(User user) {
-        if (StringUtils.isBlank(user.getEmail())) {
-            throw new IncorrectParameterException("Адрес электронной почты не может быть пустым.");
-        }
-        if (!user.getEmail().contains("@")) {
-            throw new IncorrectParameterException("Некорректный адрес электронной почты");
-        }
-        if (StringUtils.isBlank(user.getName())) {
-            throw new IncorrectParameterException("Имя пользователя не может быть пустым.");
-        }
     }
 
     public void userIdIsExist(int id) {
