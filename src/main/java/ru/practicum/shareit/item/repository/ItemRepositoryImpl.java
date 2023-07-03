@@ -51,7 +51,7 @@ public class ItemRepositoryImpl implements ItemRepository {
     }
 
     @Override
-    public Item updateItemById(Item item) {
+    public Item updateItemById(@Valid Item item) {
         Integer itemId = item.getId();
         if (!items.containsKey(itemId)) {
             throw new ItemNotFoundException("Вещь с id " + itemId + " не найдена.");
