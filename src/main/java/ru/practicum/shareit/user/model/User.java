@@ -17,7 +17,7 @@ import javax.validation.constraints.NotBlank;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@JsonIgnoreProperties(value = { "hibernateLazyInitializer", "handler" })
+@JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"})
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,7 +25,7 @@ public class User {
     private Long id;
     @NotBlank(message = "При создании нового пользователя необходимо указать его e-mail.")
     @Email(message = "При создании нового пользователя необходимо указать кооректный e-mail.")
-    @Column(name = "user_email", nullable=false, unique=true)
+    @Column(name = "user_email", nullable = false, unique = true)
     private String email;
     @NotBlank(message = "При создании нового пользователя необходимо указать его имя")
     @Column(name = "user_name", nullable = false)

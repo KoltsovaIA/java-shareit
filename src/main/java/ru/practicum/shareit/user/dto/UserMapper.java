@@ -17,7 +17,7 @@ public class UserMapper {
         Long id = userDto.getId();
         return User.builder()
                 .id(id)
-                .email(userDto.getEmail() != null ? userDto.getEmail() : userService.getUserById(id).getEmail() )
+                .email(userDto.getEmail() != null ? userDto.getEmail() : userService.getUserById(id).getEmail())
                 .name(userDto.getName() != null ? userDto.getName() : userService.getUserById(id).getName())
                 .build();
     }
@@ -32,7 +32,9 @@ public class UserMapper {
 
     public List<UserDto> listUserToListDto(List<User> users) {
         List<UserDto> listUserDto = new ArrayList<>();
-        users.forEach (value -> {listUserDto.add(userToDto(value));});
+        users.forEach(value -> {
+            listUserDto.add(userToDto(value));
+        });
         return listUserDto;
     }
 }

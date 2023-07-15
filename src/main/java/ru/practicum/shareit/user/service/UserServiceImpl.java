@@ -25,7 +25,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getUserById(Long id) {
-        if (!userRepository.existsById(id)){
+        if (!userRepository.existsById(id)) {
             throw new UserNotFoundException("Пользователь с id " + id + " не найден");
         }
         return userRepository.getReferenceById(id);
@@ -34,7 +34,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User updateUser(User user) {
         if (!Objects.equals(userRepository.getReferenceById(user.getId()).getEmail(), user.getEmail()) &&
-                userRepository.existsByEmail(user.getEmail())){
+                userRepository.existsByEmail(user.getEmail())) {
             throw new EmailAlreadyExistException("электронная почта " + user.getEmail() + " уже зарегистрирована");
         }
         return userRepository.save(user);
@@ -49,8 +49,9 @@ public class UserServiceImpl implements UserService {
     public List<User> findAllUsers() {
         return userRepository.findAll();
     }
+
     @Override
-    public boolean userIsExistsById(Long id){
+    public boolean userIsExistsById(Long id) {
         return userRepository.existsById(id);
     }
 }

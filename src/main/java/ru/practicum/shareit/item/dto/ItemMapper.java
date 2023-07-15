@@ -24,10 +24,10 @@ public class ItemMapper {
         return Item.builder()
                 .id(id)
                 .name(itemDto.getName() != null ? itemDto.getName() : itemService.getItemById(id).getName())
-                .description(itemDto.getDescription() != null ? itemDto.getDescription() : itemService.getItemById(id).
-                        getDescription())
-                .available(itemDto.getAvailable() != null ? itemDto.getAvailable() : itemService.getItemById(id).
-                        getAvailable())
+                .description(itemDto.getDescription() != null ? itemDto.getDescription() : itemService.getItemById(id)
+                        .getDescription())
+                .available(itemDto.getAvailable() != null ? itemDto.getAvailable() : itemService.getItemById(id)
+                        .getAvailable())
                 .owner(itemDto.getOwner())
                 .build();
     }
