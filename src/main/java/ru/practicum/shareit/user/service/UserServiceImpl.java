@@ -7,19 +7,18 @@ import ru.practicum.shareit.user.exception.UserNotFoundException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Objects;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     @Override
     public User createUser(User user) {
-//        if (userRepository.existsByEmail(user.getEmail())){
-//            throw new EmailAlreadyExistException("электронная почта " + user.getEmail() + " уже зарегистрирована");
-//        }
         return userRepository.save(user);
     }
 

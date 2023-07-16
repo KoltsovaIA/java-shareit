@@ -25,7 +25,7 @@ public class Comment {
     private Long id;
 
     @NotBlank(message = "Новый комментарий не может быть пустым.")
-    @Column(name = "comment_text", nullable = false)
+    @Column(name = "comment_text", length = 800, nullable = false)
     private String text;
 
     @NotNull(message = "При создании комментария к вещи необходимо указать её id.")

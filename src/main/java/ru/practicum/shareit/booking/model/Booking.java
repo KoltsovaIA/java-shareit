@@ -34,6 +34,6 @@ public class Booking {
     private Long bookerId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "approved", nullable = false)
+    @Column(name = "approved", length = 20, nullable = false)
     private BookingStatus approved;
 }

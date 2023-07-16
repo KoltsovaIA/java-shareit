@@ -1,6 +1,5 @@
 package ru.practicum.shareit.user.model;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,9 +24,9 @@ public class User {
     private Long id;
     @NotBlank(message = "При создании нового пользователя необходимо указать его e-mail.")
     @Email(message = "При создании нового пользователя необходимо указать кооректный e-mail.")
-    @Column(name = "user_email", nullable = false, unique = true)
+    @Column(name = "user_email", length = 100, nullable = false, unique = true)
     private String email;
     @NotBlank(message = "При создании нового пользователя необходимо указать его имя")
-    @Column(name = "user_name", nullable = false)
+    @Column(name = "user_name", length = 100, nullable = false)
     private String name;
 }

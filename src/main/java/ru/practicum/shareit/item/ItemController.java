@@ -10,6 +10,8 @@ import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.user.service.UserService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -23,13 +25,15 @@ public class ItemController {
     private final ItemMapper itemMapper;
 
     @PostMapping
-    public ItemDto createItem(@RequestHeader(USER_ID_HEADER) Long userId, @Valid @RequestBody ItemDto itemDto) {
+    public ItemDto createItem(@NotNull @RequestHeader(USER_ID_HEADER) Long userId,
+                              @Valid @RequestBody ItemDto itemDto) {
         itemDto.setOwner(userId);
         return itemMapper.itemToDto(userId, itemService.createItem(itemMapper.dtoToItem(itemDto)));
     }
 
     @PatchMapping({"/{id}"})
-    public ItemDto updateItemById(@RequestHeader(USER_ID_HEADER) Long userId, @Valid @PathVariable Long id,
+    public ItemDto updateItemById(@NotNull @RequestHeader(USER_ID_HEADER) Long userId,
+                                  @NotNull @PathVariable Long id,
                                   @RequestBody ItemDto itemDto) {
         itemDto.setId(id);
         itemDto.setOwner(userId);
@@ -37,24 +41,24 @@ public class ItemController {
     }
 
     @GetMapping({"/{id}"})
-    public ItemDto getItemById(@RequestHeader(USER_ID_HEADER) Long userId,
-                               @Valid @PathVariable Long id) {
+    public ItemDto getItemById(@NotNull @RequestHeader(USER_ID_HEADER) Long userId,
+                               @NotNull @PathVariable Long id) {
         return itemMapper.itemToDto(userId, itemService.getItemById(id));
     }
 
     @GetMapping
-    public List<ItemDto> findAllByOwner(@Valid @RequestHeader(USER_ID_HEADER) Long owner) {
+    public List<ItemDto> findAllByOwner(@NotNull @RequestHeader(USER_ID_HEADER) Long owner) {
         return itemMapper.listItemToListDto(itemService.getAllByOwner(owner));
     }
 
     @GetMapping({"/search"})
-    public List<ItemDto> searchItem(@Valid @RequestParam(required = false, name = "text") String text) {
+    public List<ItemDto> searchItem(@NotBlank @RequestParam(required = false, name = "text") String text) {
         return itemMapper.listItemToListDto(itemService.searchItems(text));
     }
 
     @PostMapping({"/{itemId}/comment"})
-    public OutgoingCommentDto createComment(@Valid @RequestHeader(USER_ID_HEADER) Long userId,
-                                            @Valid @PathVariable(name = "itemId") long itemId,
+    public OutgoingCommentDto createComment(@NotNull @RequestHeader(USER_ID_HEADER) Long userId,
+                                            @NotNull @PathVariable(name = "itemId") long itemId,
                                             @Valid @RequestBody IncomingCommentDto incomingCommentDto) {
         incomingCommentDto.setAuthorId(userId);
         incomingCommentDto.setItemId(itemId);

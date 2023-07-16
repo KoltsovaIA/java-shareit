@@ -4,20 +4,27 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
+import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.IncorrectParameterException;
+import ru.practicum.shareit.exception.ValidateException;
 import ru.practicum.shareit.item.exception.ItemNotFoundException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.user.exception.UserNotFoundException;
 import ru.practicum.shareit.user.service.UserService;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class BookingServiceImpl implements BookingService {
     private final UserService userService;
     private final ItemService itemService;
@@ -85,72 +92,6 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public LinkedList<Booking> getBookingsByBooker(Long bookerId) {
-        if (!userService.userIsExistsById(bookerId)) {
-            throw new UserNotFoundException("пользователь с id " + bookerId + " не найден ");
-        }
-        return bookingRepository.getAllByBookerIdOrderByStartDesc(bookerId);
-    }
-
-    @Override
-    public LinkedList<Booking> getBookingsByBookerAndState(Long bookerId, BookingStatus state) {
-        if (!userService.userIsExistsById(bookerId)) {
-            throw new UserNotFoundException("Пользователь id " + bookerId + " не найден!");
-        }
-        return bookingRepository.getAllByBookerIdAndApprovedOrderByStartDesc(bookerId, state);
-    }
-
-    @Override
-    public LinkedList<Booking> getCurrentBookingsByBooker(Long bookerId, LocalDateTime start,
-                                                          LocalDateTime end) {
-        if (!userService.userIsExistsById(bookerId)) {
-            throw new UserNotFoundException("Пользователь id " + bookerId + " не найден!");
-        }
-        return bookingRepository.getAllByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(bookerId,
-                start, end);
-    }
-
-    @Override
-    public LinkedList<Booking> getPastBookingsByBooker(Long bookerId, LocalDateTime end) {
-        if (!userService.userIsExistsById(bookerId)) {
-            throw new UserNotFoundException("Пользователь с id- " + bookerId + " не найден.");
-        }
-        return bookingRepository.getAllByBookerIdAndEndBeforeOrderByStartDesc(bookerId, end);
-    }
-
-    @Override
-    public LinkedList<Booking> getBookingsByOwner(Long ownerId) {
-        if (!userService.userIsExistsById(ownerId)) {
-            throw new UserNotFoundException("Пользователь с id : " + ownerId + " не найден!");
-        }
-        return bookingRepository.getAllByOwner(ownerId);
-    }
-
-    @Override
-    public LinkedList<Booking> getBookingsByOwnerAndState(Long ownerId, BookingStatus state) {
-        if (!userService.userIsExistsById(ownerId)) {
-            throw new UserNotFoundException("Пользователь id " + ownerId + " не найден.");
-        }
-        return bookingRepository.getAllByOwnerAndState(ownerId, state.name());
-    }
-
-    @Override
-    public LinkedList<Booking> getPastBookingsByOwnerId(Long ownerId, LocalDateTime time) {
-        if (!userService.userIsExistsById(ownerId)) {
-            throw new UserNotFoundException("Пользователь с id " + ownerId + " не найден");
-        }
-        return bookingRepository.getPastAllByOwnerId(ownerId, time);
-    }
-
-    @Override
-    public LinkedList<Booking> getCurrentBookingsByOwnerId(Long ownerId, LocalDateTime time) {
-        if (!userService.userIsExistsById(ownerId)) {
-            throw new UserNotFoundException("Пользователь с id " + ownerId + " не найден");
-        }
-        return bookingRepository.getCurrentAllByOwnerId(ownerId, LocalDateTime.now());
-    }
-
-    @Override
     public Booking findLastBooking(Long itemId, LocalDateTime start) {
         return bookingRepository.findLastBooking(itemId, start);
     }
@@ -158,5 +99,72 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Booking findNextBooking(Long itemId, LocalDateTime start) {
         return bookingRepository.findNextBooking(itemId, start);
+    }
+
+    @Override
+    public LinkedList<Booking> getAllBookingByOwnerId(Long ownerId, String state) {
+        isUserExist(ownerId);
+        if (state == null) {
+            return bookingRepository.getAllByOwner(ownerId);
+        }
+        List<String> enumNames = Stream.of(Status.values())
+                .map(Status::name)
+                .collect(Collectors.toList());
+        if (!enumNames.contains(state)) {
+            throw new IncorrectParameterException("Unknown state: " + state);
+        }
+        LocalDateTime time = LocalDateTime.now();
+        switch (Status.valueOf(state)) {
+            case WAITING:
+            case REJECTED:
+                return bookingRepository.getAllByOwnerAndState(ownerId, state);
+            case APPROVED:
+            case FUTURE:
+            case ALL:
+                return bookingRepository.getAllByOwner(ownerId);
+            case CURRENT:
+                return bookingRepository.getCurrentAllByOwnerId(ownerId, time);
+            case PAST:
+                return bookingRepository.getPastAllByOwnerId(ownerId, time);
+            default:
+                throw new ValidateException("Something wrong");
+        }
+    }
+
+    @Override
+    public LinkedList<Booking> getAllBookingByUserId(Long userId, String state) {
+        isUserExist(userId);
+        if (state == null) {
+            return bookingRepository.getAllByBookerIdOrderByStartDesc(userId);
+        }
+        List<String> enumNames = Stream.of(Status.values())
+                .map(Status::name)
+                .collect(Collectors.toList());
+        if (!enumNames.contains(state)) {
+            throw new IncorrectParameterException("Unknown state: " + state);
+        }
+        LocalDateTime time = LocalDateTime.now();
+        switch (Status.valueOf(state)) {
+            case WAITING:
+            case REJECTED:
+                return bookingRepository.getAllByBookerIdAndApprovedOrderByStartDesc(userId,
+                        BookingStatus.valueOf(state));
+            case APPROVED:
+            case FUTURE:
+            case ALL:
+                return bookingRepository.getAllByBookerIdOrderByStartDesc(userId);
+            case CURRENT:
+                return bookingRepository.getAllByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(userId, time, time);
+            case PAST:
+                return bookingRepository.getAllByBookerIdAndEndBeforeOrderByStartDesc(userId, time);
+            default:
+                throw new ValidateException("Something wrong");
+        }
+    }
+
+    private void isUserExist(Long id) {
+        if (!userService.userIsExistsById(id)) {
+            throw new UserNotFoundException("Пользователь с id " + id + " не найден");
+        }
     }
 }

@@ -14,12 +14,14 @@ import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.exception.UserNotFoundException;
 import ru.practicum.shareit.user.service.UserService;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserService userService;
@@ -67,7 +69,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public Comment createComment(Comment comment) {
         if (bookingRepository.getAllByBookerIdAndItemIdAndApprovedAndEndBeforeOrderByStartDesc(comment.getAuthorId(),
-                comment.getItemId(), BookingStatus.APPROVED, LocalDateTime.now()).size() == 0) {
+                comment.getItemId(), BookingStatus.APPROVED, LocalDateTime.now()).isEmpty()) {
             throw new IncorrectParameterException("Нельзя создать комментарий к вещи которую не брали");
         }
         return commentRepository.save(comment);
@@ -76,11 +78,6 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<Comment> findAllCommentsByItemId(Long itemId) {
         return commentRepository.getAllByItemId(itemId);
-    }
-
-    @Override
-    public List<Comment> findAllCommentOfItemsOfUserById(Long id) {
-        return commentRepository.getAllByOwnerId(id);
     }
 
     @Override

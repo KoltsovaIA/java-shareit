@@ -32,9 +32,7 @@ public class UserMapper {
 
     public List<UserDto> listUserToListDto(List<User> users) {
         List<UserDto> listUserDto = new ArrayList<>();
-        users.forEach(value -> {
-            listUserDto.add(userToDto(value));
-        });
+        users.forEach(value -> listUserDto.add(userToDto(value)));
         return listUserDto;
     }
 }

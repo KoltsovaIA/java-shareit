@@ -24,11 +24,11 @@ public class Item {
     private Long id;
 
     @NotBlank(message = "При создании новой вещи необходимо передать её название.")
-    @Column(name = "item_name", nullable = false)
+    @Column(name = "item_name", length = 100, nullable = false)
     private String name;
 
     @NotBlank(message = "При создании новой вещи необходимо передать её описание.")
-    @Column(name = "item_description", nullable = false)
+    @Column(name = "item_description", length = 200, nullable = false)
     private String description;
 
     @NotNull(message = "При создании новой вещи необходимо указать статус бронирования.")
