@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item.service;
 
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.List;
@@ -7,11 +8,19 @@ import java.util.List;
 public interface ItemService {
     Item createItem(Item item);
 
-    Item updateItemById(Item item);
+    Item updateItem(Item item);
 
-    Item getItemById(int id);
+    Item getItemById(long id);
 
-    List<Item> findAllItemsByUserId(Integer userId);
+    List<Item> getAllByOwner(long owner);
 
-    List<Item> searchItem(String text);
+    boolean itemIsExistsById(Long id);
+
+    boolean itemIsAvailableById(Long id);
+
+    List<Item> searchItems(String text);
+
+    Comment createComment(Comment comment);
+
+    List<Comment> findAllCommentsByItemId(Long itemId);
 }
