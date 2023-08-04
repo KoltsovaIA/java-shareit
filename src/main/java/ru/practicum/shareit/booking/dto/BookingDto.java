@@ -16,10 +16,8 @@ public class BookingDto {
 
     @NotBlank(message = "ID вещи должно быть указано")
     private long itemId;
-
     @NotBlank(message = "Время начала бронирования должно быть указано")
     private LocalDateTime start;
-
     @NotBlank(message = "Время окончания бронирования должно быть указано")
     private LocalDateTime end;
     private String itemName;

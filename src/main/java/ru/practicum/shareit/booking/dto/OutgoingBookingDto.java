@@ -6,14 +6,27 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import ru.practicum.shareit.booking.model.BookingStatus;
-import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+
+@Data
+@AllArgsConstructor
+@Builder
+class ShortItem {
+    Long id;
+    String name;
+}
+
+@Data
+@AllArgsConstructor
+@Builder
+class ShortBooker {
+    Long id;
+}
 
 @Data
 @Builder
@@ -25,10 +38,10 @@ public class OutgoingBookingDto {
     private Long id;
 
     @NotNull(message = "вещь должна быть указана")
-    private Item item;
+    private ShortItem item;
 
     @NotNull(message = "заказчик должн быть указан")
-    private User booker;
+    private ShortBooker booker;
 
     @NotNull(message = "Время начала бронирования должно быть указано")
     @DateTimeFormat(pattern = "YYYY-MM-DDTHH:mm:ss")

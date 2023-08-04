@@ -1,6 +1,8 @@
 package ru.practicum.shareit.booking.service;
 
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
@@ -13,6 +15,7 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.user.exception.UserNotFoundException;
 import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.util.OffsetBasedPageRequest;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
@@ -32,10 +35,10 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public Booking createBooking(Booking booking) {
-        Long bookerId = booking.getBookerId();
-        Long itemId = booking.getItemId();
+        Long bookerId = booking.getBooker().getId();
+        Long itemId = booking.getItem().getId();
         if (!userService.userIsExistsById(bookerId)) {
-            throw new UserNotFoundException("пользователь id " + bookerId + " не найден !");
+            throw new UserNotFoundException("пользователь c id = " + bookerId + " не найден !");
         }
         if (!itemService.itemIsExistsById(itemId)) {
             throw new ItemNotFoundException("Вещь с ID " + itemId + " не найдена");
@@ -55,22 +58,22 @@ public class BookingServiceImpl implements BookingService {
         if (booking.getEnd().isBefore(booking.getStart())) {
             throw new IncorrectParameterException("время окончания бронирования не может быть раньше");
         }
-        if (bookerId == itemService.getItemById(itemId).getOwner()) {
+        if (Objects.equals(bookerId, itemService.getItemById(itemId).getOwner().getId())) {
             throw new ItemNotFoundException("Владелец не может забронировать свою вещь");
         }
         return bookingRepository.save(booking);
     }
 
     @Override
-    public Booking considerationOfBooking(Long bookingId, Long ownerId, boolean approved) {
+    public Booking considerationOfBooking(Long bookingId, Long ownerId, boolean available) {
         Booking booking = bookingRepository.getReferenceById(bookingId);
-        Item item = itemService.getItemById(booking.getItemId());
-        if (item.getOwner() != ownerId) {
+        Item item = itemService.getItemById(booking.getItem().getId());
+        if (!Objects.equals(item.getOwner().getId(), ownerId)) {
             throw new UserNotFoundException("изменить состояние бронирования может только владелец вещи");
         }
-        if (approved && booking.getApproved() != BookingStatus.APPROVED) {
+        if (available && (booking.getApproved() != BookingStatus.APPROVED)) {
             booking.setApproved(BookingStatus.APPROVED);
-        } else if (!approved && booking.getApproved() != BookingStatus.REJECTED) {
+        } else if (!available && (booking.getApproved() != BookingStatus.REJECTED)) {
             booking.setApproved(BookingStatus.REJECTED);
         } else {
             throw new IncorrectParameterException("Статус не изменился");
@@ -84,8 +87,8 @@ public class BookingServiceImpl implements BookingService {
             throw new UserNotFoundException("Бронь с id " + bookingId + " не найдена");
         }
         Booking booking = bookingRepository.getReferenceById(bookingId);
-        Item item = itemService.getItemById(booking.getItemId());
-        if (!Objects.equals(booking.getBookerId(), userId) && !Objects.equals(item.getOwner(), userId)) {
+        Item item = itemService.getItemById(booking.getItem().getId());
+        if (!Objects.equals(booking.getBooker().getId(), userId) && !Objects.equals(item.getOwner().getId(), userId)) {
             throw new UserNotFoundException("Только пользователь создавший бронь может просматривать ее");
         }
         return bookingRepository.getReferenceById(bookingId);
@@ -102,10 +105,11 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public LinkedList<Booking> getAllBookingByOwnerId(Long ownerId, String state) {
+    public LinkedList<Booking> getAllBookingByOwnerId(Long ownerId, String state, Short from, Short size) {
         isUserExist(ownerId);
+        Pageable paging = new OffsetBasedPageRequest(from, size, Sort.by("start").descending());
         if (state == null) {
-            return bookingRepository.getAllByOwner(ownerId);
+            return bookingRepository.getAllByItemOwnerId(ownerId, paging);
         }
         List<String> enumNames = Stream.of(Status.values())
                 .map(Status::name)
@@ -117,25 +121,26 @@ public class BookingServiceImpl implements BookingService {
         switch (Status.valueOf(state)) {
             case WAITING:
             case REJECTED:
-                return bookingRepository.getAllByOwnerAndState(ownerId, state);
+                return bookingRepository.getAllByItemOwnerIdAndApproved(ownerId, BookingStatus.valueOf(state), paging);
             case APPROVED:
             case FUTURE:
             case ALL:
-                return bookingRepository.getAllByOwner(ownerId);
+                return bookingRepository.getAllByItemOwnerId(ownerId, paging);
             case CURRENT:
-                return bookingRepository.getCurrentAllByOwnerId(ownerId, time);
+                return bookingRepository.getAllByItemOwnerIdAndStartBeforeAndEndAfter(ownerId, time, time, paging);
             case PAST:
-                return bookingRepository.getPastAllByOwnerId(ownerId, time);
+                return bookingRepository.getAllByItemOwnerIdAndEndBefore(ownerId, time, paging);
             default:
                 throw new ValidateException("Something wrong");
         }
     }
 
     @Override
-    public LinkedList<Booking> getAllBookingByUserId(Long userId, String state) {
+    public LinkedList<Booking> getAllBookingByUserId(Long userId, String state, Short from, Short size) {
         isUserExist(userId);
+        Pageable paging = new OffsetBasedPageRequest(from, size, Sort.by("start").descending());
         if (state == null) {
-            return bookingRepository.getAllByBookerIdOrderByStartDesc(userId);
+            return bookingRepository.getAllByBookerId(userId, paging);
         }
         List<String> enumNames = Stream.of(Status.values())
                 .map(Status::name)
@@ -147,16 +152,17 @@ public class BookingServiceImpl implements BookingService {
         switch (Status.valueOf(state)) {
             case WAITING:
             case REJECTED:
-                return bookingRepository.getAllByBookerIdAndApprovedOrderByStartDesc(userId,
-                        BookingStatus.valueOf(state));
+                return bookingRepository.getAllByBookerIdAndApproved(userId,
+                        BookingStatus.valueOf(state), paging);
             case APPROVED:
             case FUTURE:
             case ALL:
-                return bookingRepository.getAllByBookerIdOrderByStartDesc(userId);
+                return bookingRepository.getAllByBookerId(userId, paging);
             case CURRENT:
-                return bookingRepository.getAllByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(userId, time, time);
+                return bookingRepository.getAllByBookerIdAndStartBeforeAndEndAfter(userId, time, time,
+                        paging);
             case PAST:
-                return bookingRepository.getAllByBookerIdAndEndBeforeOrderByStartDesc(userId, time);
+                return bookingRepository.getAllByBookerIdAndEndBefore(userId, time, paging);
             default:
                 throw new ValidateException("Something wrong");
         }

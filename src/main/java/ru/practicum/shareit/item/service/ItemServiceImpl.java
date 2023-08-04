@@ -30,7 +30,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Item createItem(Item item) {
-        if (!userService.userIsExistsById(item.getOwner())) {
+        if (!userService.userIsExistsById(item.getOwner().getId())) {
             throw new UserNotFoundException("");
         }
         return itemRepository.save(item);
@@ -54,7 +54,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<Item> getAllByOwner(long owner) {
-        return itemRepository.getAllByOwner(owner);
+        return itemRepository.getAllByOwnerId(owner);
     }
 
     @Override
@@ -68,8 +68,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Comment createComment(Comment comment) {
-        if (bookingRepository.getAllByBookerIdAndItemIdAndApprovedAndEndBeforeOrderByStartDesc(comment.getAuthorId(),
-                comment.getItemId(), BookingStatus.APPROVED, LocalDateTime.now()).isEmpty()) {
+        if (bookingRepository.getAllByBookerIdAndItemIdAndApprovedAndEndBeforeOrderByStartDesc(
+                comment.getBooker().getId(), comment.getItem().getId(), BookingStatus.APPROVED,
+                LocalDateTime.now()).isEmpty()) {
             throw new IncorrectParameterException("Нельзя создать комментарий к вещи которую не брали");
         }
         return commentRepository.save(comment);
@@ -88,5 +89,10 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public boolean itemIsAvailableById(Long id) {
         return itemRepository.getReferenceById(id).getAvailable();
+    }
+
+    @Override
+    public List<Item> getAllByItemRequestId(Long requestId) {
+        return itemRepository.getAllByItemRequestId(requestId);
     }
 }

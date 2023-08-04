@@ -9,6 +9,8 @@ import ru.practicum.shareit.booking.service.BookingService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
@@ -22,7 +24,7 @@ public class BookingController {
     @PostMapping
     public OutgoingBookingDto createBooking(@RequestHeader(USER_ID_HEADER) Long bookerId,
                                             @Valid @RequestBody IncomingBookingDto bookingDto) {
-        return bookingMapper.bookingToDto(bookingService
+        return BookingMapper.bookingToDto(bookingService
                 .createBooking(bookingMapper.dtoToBooking(bookerId, bookingDto)));
     }
 
@@ -30,25 +32,33 @@ public class BookingController {
     public OutgoingBookingDto bookingApproveByOwner(@NotNull @RequestHeader(USER_ID_HEADER) Long ownerId,
                                                     @NotNull @PathVariable Long bookingId,
                                                     @NotNull @RequestParam boolean approved) {
-        return bookingMapper.bookingToDto(bookingService.considerationOfBooking(bookingId, ownerId, approved));
+        return BookingMapper.bookingToDto(bookingService.considerationOfBooking(bookingId, ownerId, approved));
     }
 
     @GetMapping("/{bookingId}")
     public OutgoingBookingDto getBookingByUserId(@NotNull @RequestHeader(USER_ID_HEADER) Long userId,
                                                  @PathVariable(required = false) Long bookingId) {
-        return bookingMapper.bookingToDto(bookingService.getBookingById(userId, bookingId));
+        return BookingMapper.bookingToDto(bookingService.getBookingById(userId, bookingId));
 
     }
 
     @GetMapping("/owner")
     public List<OutgoingBookingDto> getAllBookingByOwnerId(@NotNull @RequestHeader(USER_ID_HEADER) Long ownerId,
-                                                           @RequestParam(required = false) String state) {
-        return bookingMapper.listItemToListDto(bookingService.getAllBookingByOwnerId(ownerId, state));
+                                                           @RequestParam(required = false) String state,
+                                                           @RequestParam(defaultValue = "0")
+                                                           @PositiveOrZero Short from,
+                                                           @RequestParam(defaultValue = "32")
+                                                           @Positive Short size) {
+        return bookingMapper.listItemToListDto(bookingService.getAllBookingByOwnerId(ownerId, state, from, size));
     }
 
     @GetMapping
     public List<OutgoingBookingDto> getAllBookingByUserId(@NotNull @RequestHeader(USER_ID_HEADER) Long userId,
-                                                          @RequestParam(required = false) String state) {
-        return bookingMapper.listItemToListDto(bookingService.getAllBookingByUserId(userId, state));
+                                                          @RequestParam(required = false) String state,
+                                                          @RequestParam(defaultValue = "0")
+                                                          @PositiveOrZero Short from,
+                                                          @RequestParam(defaultValue = "32")
+                                                          @Positive Short size) {
+        return bookingMapper.listItemToListDto(bookingService.getAllBookingByUserId(userId, state, from, size));
     }
 }

@@ -22,4 +22,5 @@ public class OutgoingCommentDto {
     @DateTimeFormat(pattern = "YYYY-MM-DDTHH:mm:ss")
     @Temporal(TemporalType.DATE)
     private LocalDateTime created;
+    private long requestId;
 }

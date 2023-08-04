@@ -19,19 +19,24 @@ public class BookingMapper {
     public Booking dtoToBooking(Long bookerId, IncomingBookingDto incomingBookingDto) {
         return Booking.builder()
                 .id(null)
-                .bookerId(bookerId)
-                .itemId(incomingBookingDto.getItemId())
+                .booker(userService.getUserById(bookerId))
+                .item(itemService.getItemById(incomingBookingDto.getItemId()))
                 .start(incomingBookingDto.getStart())
                 .end(incomingBookingDto.getEnd())
                 .approved(BookingStatus.WAITING)
                 .build();
     }
 
-    public OutgoingBookingDto bookingToDto(Booking booking) {
+    public static OutgoingBookingDto bookingToDto(Booking booking) {
         return OutgoingBookingDto.builder()
                 .id(booking.getId())
-                .booker(userService.getUserById(booking.getBookerId()))
-                .item(itemService.getItemById(booking.getItemId()))
+                .booker(ShortBooker.builder()
+                        .id(booking.getBooker().getId())
+                        .build())
+                .item(ShortItem.builder()
+                        .id(booking.getItem().getId())
+                        .name(booking.getItem().getName())
+                        .build())
                 .status(booking.getApproved())
                 .start(booking.getStart())
                 .end(booking.getEnd())
