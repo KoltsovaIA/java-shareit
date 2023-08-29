@@ -96,7 +96,7 @@ class BookingServiceTest {
         assertThrows(IncorrectParameterException.class, () -> bookingService.createBooking(booking),
                 "Метод createBooking работает некорректно при запросе с некоректной датой окончания брони");
         booking.setStart(LocalDateTime.now().plusMonths(1));
-        booking.setEnd(LocalDateTime.now().plusMonths(1));
+        booking.setEnd(booking.getStart());
         assertThrows(IncorrectParameterException.class, () -> bookingService.createBooking(booking),
                 "Метод createBooking работает некорректно при запросе с некоректными датами начала " +
                         "и окончания бронирования");
