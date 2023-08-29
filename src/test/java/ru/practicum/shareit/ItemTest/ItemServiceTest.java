@@ -41,7 +41,7 @@ class ItemServiceTest {
     private static Long wrongItemId;
 
     @BeforeEach
-    void beforeAll(){
+    void beforeAll() {
         itemRepository = Mockito.mock(ItemRepository.class);
         userService = Mockito.mock(UserService.class);
         commentRepository = Mockito.mock(CommentRepository.class);

@@ -26,8 +26,8 @@ public class ItemRequestController {
     public OutgoingItemRequestDto createItemRequest(@Valid @RequestBody IncomingItemRequestDto dto,
                                                     @RequestHeader(USER_ID_HEADER) long userId) {
         return requestMapper.itemRequestToOutgoingItemRequestDto(
-                itemRequestService.createItemRequest(requestMapper.
-                        incomingItemRequestDtoToItemRequest(userId, dto)));
+                itemRequestService.createItemRequest(requestMapper
+                        .incomingItemRequestDtoToItemRequest(userId, dto)));
     }
 
     @GetMapping
@@ -47,7 +47,7 @@ public class ItemRequestController {
     @GetMapping("/{requestId}")
     public OutgoingItemRequestDto findItemRequestById(@RequestHeader(USER_ID_HEADER) long userId,
                                                       @PathVariable long requestId) {
-        return requestMapper.itemRequestToOutgoingItemRequestDto(itemRequestService.findItemRequestsById
-                (userId, requestId));
+        return requestMapper.itemRequestToOutgoingItemRequestDto(itemRequestService
+                .findItemRequestsById(userId, requestId));
     }
 }
