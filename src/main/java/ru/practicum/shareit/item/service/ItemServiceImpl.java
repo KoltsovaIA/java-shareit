@@ -18,6 +18,7 @@ import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @AllArgsConstructor
@@ -38,7 +39,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Item updateItem(Item item) {
-        if (itemRepository.getReferenceById(item.getId()).getOwner() != item.getOwner()) {
+        if (!Objects.equals(itemRepository.getReferenceById(item.getId()).getOwner(), item.getOwner())) {
             throw new ItemNotFoundException("");
         }
         return itemRepository.save(item);
@@ -70,7 +71,7 @@ public class ItemServiceImpl implements ItemService {
     public Comment createComment(Comment comment) {
         if (bookingRepository.getAllByBookerIdAndItemIdAndApprovedAndEndBeforeOrderByStartDesc(
                 comment.getBooker().getId(), comment.getItem().getId(), BookingStatus.APPROVED,
-                LocalDateTime.now()).isEmpty()) {
+                LocalDateTime.now(), null).isEmpty()) {
             throw new IncorrectParameterException("Нельзя создать комментарий к вещи которую не брали");
         }
         return commentRepository.save(comment);

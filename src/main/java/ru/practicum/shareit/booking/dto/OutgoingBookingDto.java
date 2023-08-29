@@ -14,21 +14,6 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Data
-@AllArgsConstructor
-@Builder
-class ShortItem {
-    Long id;
-    String name;
-}
-
-@Data
-@AllArgsConstructor
-@Builder
-class ShortBooker {
-    Long id;
-}
-
-@Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

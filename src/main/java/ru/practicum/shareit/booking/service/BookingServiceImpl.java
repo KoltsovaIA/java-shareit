@@ -9,7 +9,6 @@ import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.IncorrectParameterException;
-import ru.practicum.shareit.exception.ValidateException;
 import ru.practicum.shareit.item.exception.ItemNotFoundException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
@@ -38,7 +37,7 @@ public class BookingServiceImpl implements BookingService {
         Long bookerId = booking.getBooker().getId();
         Long itemId = booking.getItem().getId();
         if (!userService.userIsExistsById(bookerId)) {
-            throw new UserNotFoundException("пользователь c id = " + bookerId + " не найден !");
+            throw new UserNotFoundException("Пользователь c id = " + bookerId + " не найден !");
         }
         if (!itemService.itemIsExistsById(itemId)) {
             throw new ItemNotFoundException("Вещь с ID " + itemId + " не найдена");
@@ -106,7 +105,10 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public LinkedList<Booking> getAllBookingByOwnerId(Long ownerId, String state, Short from, Short size) {
-        isUserExist(ownerId);
+        if (!userService.userIsExistsById(ownerId)) {
+            throw new UserNotFoundException("Пользователь с id " + ownerId + " не найден");
+        }
+        LinkedList<Booking> bookingList = null;
         Pageable paging = new OffsetBasedPageRequest(from, size, Sort.by("start").descending());
         if (state == null) {
             return bookingRepository.getAllByItemOwnerId(ownerId, paging);
@@ -121,23 +123,30 @@ public class BookingServiceImpl implements BookingService {
         switch (Status.valueOf(state)) {
             case WAITING:
             case REJECTED:
-                return bookingRepository.getAllByItemOwnerIdAndApproved(ownerId, BookingStatus.valueOf(state), paging);
+                bookingList = bookingRepository.getAllByItemOwnerIdAndApproved(ownerId, BookingStatus.valueOf(state),
+                        paging);
+                break;
             case APPROVED:
             case FUTURE:
             case ALL:
-                return bookingRepository.getAllByItemOwnerId(ownerId, paging);
+                bookingList = bookingRepository.getAllByItemOwnerId(ownerId, paging);
+                break;
             case CURRENT:
-                return bookingRepository.getAllByItemOwnerIdAndStartBeforeAndEndAfter(ownerId, time, time, paging);
+                bookingList = bookingRepository.getAllByItemOwnerIdAndStartBeforeAndEndAfter(ownerId, time, time,
+                        paging);
+                break;
             case PAST:
-                return bookingRepository.getAllByItemOwnerIdAndEndBefore(ownerId, time, paging);
-            default:
-                throw new ValidateException("Something wrong");
+                bookingList = bookingRepository.getAllByItemOwnerIdAndEndBefore(ownerId, time, paging);
         }
+        return bookingList;
     }
 
     @Override
     public LinkedList<Booking> getAllBookingByUserId(Long userId, String state, Short from, Short size) {
-        isUserExist(userId);
+        if (!userService.userIsExistsById(userId)) {
+            throw new UserNotFoundException("Пользователь с id " + userId + " не найден");
+        }
+        LinkedList<Booking> bookingList = null;
         Pageable paging = new OffsetBasedPageRequest(from, size, Sort.by("start").descending());
         if (state == null) {
             return bookingRepository.getAllByBookerId(userId, paging);
@@ -152,25 +161,21 @@ public class BookingServiceImpl implements BookingService {
         switch (Status.valueOf(state)) {
             case WAITING:
             case REJECTED:
-                return bookingRepository.getAllByBookerIdAndApproved(userId,
+                bookingList = bookingRepository.getAllByBookerIdAndApproved(userId,
                         BookingStatus.valueOf(state), paging);
+                break;
             case APPROVED:
             case FUTURE:
             case ALL:
-                return bookingRepository.getAllByBookerId(userId, paging);
+                bookingList = bookingRepository.getAllByBookerId(userId, paging);
+                break;
             case CURRENT:
-                return bookingRepository.getAllByBookerIdAndStartBeforeAndEndAfter(userId, time, time,
+                bookingList = bookingRepository.getAllByBookerIdAndStartBeforeAndEndAfter(userId, time, time,
                         paging);
+                break;
             case PAST:
-                return bookingRepository.getAllByBookerIdAndEndBefore(userId, time, paging);
-            default:
-                throw new ValidateException("Something wrong");
+                bookingList = bookingRepository.getAllByBookerIdAndEndBefore(userId, time, paging);
         }
-    }
-
-    private void isUserExist(Long id) {
-        if (!userService.userIsExistsById(id)) {
-            throw new UserNotFoundException("Пользователь с id " + id + " не найден");
-        }
+        return bookingList;
     }
 }

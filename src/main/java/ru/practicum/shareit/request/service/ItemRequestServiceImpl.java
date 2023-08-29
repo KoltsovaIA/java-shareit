@@ -2,7 +2,7 @@ package ru.practicum.shareit.request.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,6 +11,7 @@ import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.exception.UserNotFoundException;
 import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.util.OffsetBasedPageRequest;
 
 import java.util.List;
 
@@ -38,8 +39,8 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     @Override
     public List<ItemRequest> getAllItemRequest(Long requesterId, Short from, Short size) {
         checkUserIsExistById(requesterId);
-        return itemRequestRepository.findAllByRequesterIdNot(requesterId,
-                PageRequest.of(from, size, Sort.by("created").descending()));
+        Pageable paging = new OffsetBasedPageRequest(from, size, Sort.by("created").descending());
+        return itemRequestRepository.findAllByRequesterIdNot(requesterId, paging);
     }
 
     @Override

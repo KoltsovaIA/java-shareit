@@ -1,10 +1,7 @@
-/*
 package ru.practicum.shareit.ItemTest;
-
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mockito;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
@@ -18,6 +15,7 @@ import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.item.service.ItemServiceImpl;
 import ru.practicum.shareit.user.exception.UserNotFoundException;
+import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
 import java.time.LocalDateTime;
@@ -27,41 +25,43 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-
+import static org.mockito.Mockito.when;
 
 class ItemServiceTest {
-    ItemRepository itemRepository = Mockito.mock(ItemRepository.class);
-    UserService userService = Mockito.mock(UserService.class);
-    CommentRepository commentRepository = Mockito.mock(CommentRepository.class);
-    BookingRepository bookingRepository = Mockito.mock(BookingRepository.class);
-
-    @InjectMocks
-    ItemService itemService = new ItemServiceImpl(itemRepository, userService, commentRepository, bookingRepository);
-
-    private Item item;
-    private Long owner;
-    private Long booker;
-    private Long wrongOwner;
-    private Long wrongBooker;
-    private Long wrongItemId;
+    private static ItemRepository itemRepository;
+    private static UserService userService;
+    private static CommentRepository commentRepository;
+    private static BookingRepository bookingRepository;
+    private static ItemService itemService;
+    private static Item item;
+    private static User owner;
+    private static User booker;
+    private static User wrongOwner;
+    private static User wrongBooker;
+    private static Long wrongItemId;
 
     @BeforeEach
-    void setUp() {
-        owner = 1L;
-        booker = 2L;
-        wrongOwner = 8888L;
-        wrongBooker = 7777L;
+    void beforeAll(){
+        itemRepository = Mockito.mock(ItemRepository.class);
+        userService = Mockito.mock(UserService.class);
+        commentRepository = Mockito.mock(CommentRepository.class);
+        bookingRepository = Mockito.mock(BookingRepository.class);
+        itemService = new ItemServiceImpl(itemRepository, userService, commentRepository, bookingRepository);
+        owner = new User(1L, "user1@email.ru", "user1");
+        booker = new User(2L, "user2@email.ru", "user2");
+        wrongOwner = new User(8888L, "user8888@email.ru", "user8888");
+        wrongBooker = new User(7777L, "user7777@email.ru", "user7777");
         wrongItemId = 9999L;
-        item = new Item(1L, "Item", "Description of item", true, owner, );
+        item = new Item(1L, "Item", "Description of item", true, owner, null);
     }
 
     @Test
     void createItem() {
-        Mockito.when(itemRepository.save(any()))
+        when(itemRepository.save(any(Item.class)))
                 .thenReturn(item);
-        Mockito.when(userService.userIsExistsById(owner))
+        when(userService.userIsExistsById(owner.getId()))
                 .thenReturn(true);
-        assertEquals(itemService.createItem(item), item);
+        assertEquals(item, itemService.createItem(item));
         item.setOwner(wrongOwner);
         assertThrows(UserNotFoundException.class, () -> itemService.createItem(item),
                 "Метод create работает некорректно при попытке получить пользователя с несуществующим id");
@@ -69,25 +69,26 @@ class ItemServiceTest {
 
     @Test
     void updateItem() {
-        Mockito.when(itemRepository.save(any()))
+        when(itemRepository.save(any(Item.class)))
                 .thenReturn(item);
-        Mockito.when(userService.userIsExistsById(owner))
+        when(userService.userIsExistsById(owner.getId()))
                 .thenReturn(true);
-        Mockito.when(itemRepository.getReferenceById(item.getId()))
+        when(itemRepository.getReferenceById(item.getId()))
                 .thenReturn(item);
-        assertEquals(itemService.updateItem(item), item);
-        Item wrongItem = new Item(item.getId(), "Item", "Description of item", true, wrongOwner);
+        assertEquals(item, itemService.updateItem(item));
+        Item wrongItem = new Item(item.getId(), "Item", "Description of item",
+                true, wrongOwner, null);
         assertThrows(ItemNotFoundException.class, () -> itemService.updateItem(wrongItem),
                 "Метод update работает некорректно при попытке обновить вещь не владельцем");
     }
 
     @Test
     void getItemById() {
-        Mockito.when(itemRepository.getReferenceById(item.getId()))
+        when(itemRepository.getReferenceById(item.getId()))
                 .thenReturn(item);
-        Mockito.when(itemRepository.existsById(item.getId()))
+        when(itemRepository.existsById(item.getId()))
                 .thenReturn(true);
-        assertEquals(itemService.getItemById(item.getId()), item);
+        assertEquals(item, itemService.getItemById(item.getId()));
         assertThrows(ItemNotFoundException.class, () -> itemService.getItemById(wrongItemId),
                 "Метод getItemById работает некорректно при попытке получить вещь с несуществующим id");
     }
@@ -95,26 +96,26 @@ class ItemServiceTest {
     @Test
     void searchItems() {
         String text = "";
-        Mockito.when(itemRepository.findByNameOrDescriptionContainingIgnoreCaseAndAvailableIsTrue(anyString(),
-                        anyString()))
+        when(itemRepository.findByNameOrDescriptionContainingIgnoreCaseAndAvailableIsTrue(anyString(),
+                anyString()))
                 .thenReturn(java.util.List.of(item));
-        assertEquals(itemService.searchItems(text), new ArrayList<>());
+        assertEquals(new ArrayList<>(), itemService.searchItems(text));
         text = "of";
-        assertEquals(itemService.searchItems(text), java.util.List.of(item));
+        assertEquals(java.util.List.of(item), itemService.searchItems(text));
     }
 
     @Test
     void createComment() {
-        Comment comment = new Comment(1L, "comment1", 1L, 1L, LocalDateTime.now());
-        Booking booking = new Booking(1L, LocalDateTime.now(), LocalDateTime.now(), item.getId(), 1L,
+        Comment comment = new Comment(1L, "comment1", item, booker, LocalDateTime.now());
+        Booking booking = new Booking(1L, LocalDateTime.now(), LocalDateTime.now(), item, booker,
                 BookingStatus.APPROVED);
-        Mockito.when(commentRepository.save(any()))
+        when(commentRepository.save(any(Comment.class)))
                 .thenReturn(comment);
-        Mockito.when(bookingRepository.getAllByBookerIdAndItemIdAndApprovedAndEndBeforeOrderByStartDesc(anyLong(),
-                        eq(1L), any(), any()))
+        when(bookingRepository.getAllByBookerIdAndItemIdAndApprovedAndEndBeforeOrderByStartDesc(eq(booker.getId()),
+                eq(item.getId()), any(), any(), eq(null)))
                 .thenReturn(new LinkedList<>(List.of(booking)));
-        assertEquals(itemService.createComment(comment), comment);
-        Comment comment2 = new Comment(1L, "comment1", 2L, 1L, LocalDateTime.now());
+        assertEquals(comment, itemService.createComment(comment));
+        Comment comment2 = new Comment(2L, "comment2", item, wrongBooker, LocalDateTime.now());
         assertThrows(IncorrectParameterException.class, () -> itemService.createComment(comment2),
                 "Метод createComment работает некорректно при попытке создать комментарий "
                         + "к вещи которую небрали");
@@ -122,23 +123,23 @@ class ItemServiceTest {
 
     @Test
     void getAllByOwnerTest() {
-        Mockito.when(itemRepository.getAllByOwnerId(anyLong()))
+        when(itemRepository.getAllByOwnerId(anyLong()))
                 .thenReturn(java.util.List.of(item));
-        assertEquals(itemService.getAllByOwner(owner), java.util.List.of(item));
+        assertEquals(java.util.List.of(item), itemService.getAllByOwner(owner.getId()));
     }
 
     @Test
     void findAllCommentsByItemIdTest() {
-        Comment comment = new Comment(1L, "comment1", 1L, 1L, LocalDateTime.now());
-        Mockito.when(commentRepository.getAllByItemId(item.getId()))
+        Comment comment = new Comment(1L, "comment1", item, booker, LocalDateTime.now());
+        when(commentRepository.getAllByItemId(item.getId()))
                 .thenReturn(new LinkedList<>(List.of(comment)));
-        assertEquals(itemService.findAllCommentsByItemId(1L), new LinkedList<>(List.of(comment)));
-        assertEquals(itemService.findAllCommentsByItemId(2L), new LinkedList<>());
+        assertEquals(new LinkedList<>(List.of(comment)), itemService.findAllCommentsByItemId(1L));
+        assertEquals(new LinkedList<>(), itemService.findAllCommentsByItemId(2L));
     }
 
     @Test
     void itemIsExistsByIdTest() {
-        Mockito.when(itemRepository.existsById(item.getId()))
+        when(itemRepository.existsById(item.getId()))
                 .thenReturn(true);
         assertTrue(itemService.itemIsExistsById(1L));
         assertFalse(itemService.itemIsExistsById(2L));
@@ -146,8 +147,15 @@ class ItemServiceTest {
 
     @Test
     void itemIsAvailableByIdTest() {
-        Mockito.when(itemRepository.getReferenceById(item.getId()))
-                        .thenReturn(item);
-        assertEquals(itemService.itemIsAvailableById(1L), item.getAvailable());
+        when(itemRepository.getReferenceById(item.getId()))
+                .thenReturn(item);
+        assertEquals(item.getAvailable(), itemService.itemIsAvailableById(1L));
     }
-}*/
+
+    @Test
+    void getAllByItemRequestIdTest() {
+        when(itemRepository.getAllByItemRequestId(anyLong()))
+                .thenReturn(java.util.List.of(item));
+        assertEquals(java.util.List.of(item), itemService.getAllByItemRequestId(1L));
+    }
+}

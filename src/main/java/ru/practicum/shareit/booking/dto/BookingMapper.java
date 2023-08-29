@@ -27,7 +27,7 @@ public class BookingMapper {
                 .build();
     }
 
-    public static OutgoingBookingDto bookingToDto(Booking booking) {
+    public OutgoingBookingDto bookingToDto(Booking booking) {
         return OutgoingBookingDto.builder()
                 .id(booking.getId())
                 .booker(ShortBooker.builder()
@@ -43,7 +43,7 @@ public class BookingMapper {
                 .build();
     }
 
-    public List<OutgoingBookingDto> listItemToListDto(List<Booking> bookings) {
+    public List<OutgoingBookingDto> listBookingToListDto(List<Booking> bookings) {
         LinkedList<OutgoingBookingDto> listBookingDto = new LinkedList<>();
         bookings.forEach(value -> listBookingDto.add(bookingToDto(value)));
         return listBookingDto;

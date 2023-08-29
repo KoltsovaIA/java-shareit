@@ -22,7 +22,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     LinkedList<Booking> getAllByBookerIdAndItemIdAndApprovedAndEndBeforeOrderByStartDesc(Long bookerId, Long itemId,
                                                                                          BookingStatus state,
-                                                                                         LocalDateTime end);
+                                                                                         LocalDateTime end,
+                                                                                         Pageable pageable);
 
     LinkedList<Booking> getAllByItemOwnerId(Long ownerId, Pageable page);
 

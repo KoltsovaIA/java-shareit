@@ -24,7 +24,7 @@ public class BookingController {
     @PostMapping
     public OutgoingBookingDto createBooking(@RequestHeader(USER_ID_HEADER) Long bookerId,
                                             @Valid @RequestBody IncomingBookingDto bookingDto) {
-        return BookingMapper.bookingToDto(bookingService
+        return bookingMapper.bookingToDto(bookingService
                 .createBooking(bookingMapper.dtoToBooking(bookerId, bookingDto)));
     }
 
@@ -32,13 +32,13 @@ public class BookingController {
     public OutgoingBookingDto bookingApproveByOwner(@NotNull @RequestHeader(USER_ID_HEADER) Long ownerId,
                                                     @NotNull @PathVariable Long bookingId,
                                                     @NotNull @RequestParam boolean approved) {
-        return BookingMapper.bookingToDto(bookingService.considerationOfBooking(bookingId, ownerId, approved));
+        return bookingMapper.bookingToDto(bookingService.considerationOfBooking(bookingId, ownerId, approved));
     }
 
     @GetMapping("/{bookingId}")
     public OutgoingBookingDto getBookingByUserId(@NotNull @RequestHeader(USER_ID_HEADER) Long userId,
                                                  @PathVariable(required = false) Long bookingId) {
-        return BookingMapper.bookingToDto(bookingService.getBookingById(userId, bookingId));
+        return bookingMapper.bookingToDto(bookingService.getBookingById(userId, bookingId));
 
     }
 
@@ -49,7 +49,7 @@ public class BookingController {
                                                            @PositiveOrZero Short from,
                                                            @RequestParam(defaultValue = "32")
                                                            @Positive Short size) {
-        return bookingMapper.listItemToListDto(bookingService.getAllBookingByOwnerId(ownerId, state, from, size));
+        return bookingMapper.listBookingToListDto(bookingService.getAllBookingByOwnerId(ownerId, state, from, size));
     }
 
     @GetMapping
@@ -59,6 +59,6 @@ public class BookingController {
                                                           @PositiveOrZero Short from,
                                                           @RequestParam(defaultValue = "32")
                                                           @Positive Short size) {
-        return bookingMapper.listItemToListDto(bookingService.getAllBookingByUserId(userId, state, from, size));
+        return bookingMapper.listBookingToListDto(bookingService.getAllBookingByUserId(userId, state, from, size));
     }
 }

@@ -1,7 +1,9 @@
 package ru.practicum.shareit.item.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.Temporal;
@@ -12,15 +14,19 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class OutgoingCommentDto {
     @NotNull
     private Long id;
+
     @NotBlank(message = "Комментарий не может быть пустым.")
     private String text;
+
     @NotBlank(message = "Имя автора не может быть пустым")
     private String authorName;
+
     @DateTimeFormat(pattern = "YYYY-MM-DDTHH:mm:ss")
     @Temporal(TemporalType.DATE)
     private LocalDateTime created;
-    private long requestId;
 }

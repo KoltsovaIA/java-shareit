@@ -1,7 +1,10 @@
 package ru.practicum.shareit.item.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import ru.practicum.shareit.booking.dto.ShortBooking;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -9,13 +12,8 @@ import java.util.List;
 
 @Data
 @Builder
-class ShortBooking {
-    Long id;
-    Long bookerId;
-}
-
-@Data
-@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ItemDto {
     private Long id;
     @NotBlank(message = "Название вещи должно быть указано")
@@ -30,4 +28,3 @@ public class ItemDto {
     private List<OutgoingCommentDto> comments;
     private Long requestId;
 }
-
