@@ -34,7 +34,6 @@ class ItemMapperTest {
     private static BookingService bookingService;
     private static UserService userService;
     private static ItemMapper itemMapper;
-
     private static Item item;
     private static User user;
     private static ItemRequest itemRequest;
@@ -49,7 +48,7 @@ class ItemMapperTest {
     private static OutgoingCommentDto outgoingCommentDto;
 
     @BeforeEach
-    void beforeAll() {
+    void beforeEach() {
         itemService = Mockito.mock(ItemService.class);
         userService = Mockito.mock(UserService.class);
         itemRequestService = Mockito.mock(ItemRequestService.class);

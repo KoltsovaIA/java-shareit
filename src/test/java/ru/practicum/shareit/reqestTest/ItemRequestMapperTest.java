@@ -42,14 +42,17 @@ class ItemRequestMapperTest {
         requester = new User(100L, "user100@email.ru", "User100");
         User owner = new User(2L, "user2@email.ru", "User2");
         requestDto = new IncomingItemRequestDto("description");
+//        itemRequest = new ItemRequest(1L, "description", LocalDateTime.now(), requester);
         itemRequest = new ItemRequest(1L, "description", LocalDateTime.now(), requester);
         item = new Item(1L, "name", "description", true, owner, itemRequest);
         shortItemDto = new ShortItemDto(1L, "name", "description", true, 1L);
         List<ShortItemDto> items = new ArrayList<>();
         items.add(shortItemDto);
-        itemRequest = new ItemRequest(null, "description", LocalDateTime.now(), null);
-        outgoingItemRequestDto = new OutgoingItemRequestDto(null, "description", LocalDateTime.now(), items);
-        outgoingItemRequestDtoForList = new OutgoingItemRequestDto(null, "description", LocalDateTime.now(), new ArrayList<>());
+        outgoingItemRequestDto = new OutgoingItemRequestDto(itemRequest.getId(), "description",
+                itemRequest.getCreated(), items);
+        outgoingItemRequestDtoForList = new OutgoingItemRequestDto(itemRequest.getId(), "description",
+                itemRequest.getCreated(), new ArrayList<>());
+
 
     }
 
@@ -57,18 +60,20 @@ class ItemRequestMapperTest {
     void incomingItemRequestDtoToItemRequestTest() {
         when(userService.getUserById(requester.getId()))
                 .thenReturn(requester);
+        itemRequest.setId(null);
         assertEquals(itemRequest.getId(), requestMapper
-                .incomingItemRequestDtoToItemRequest(itemRequest.getId(), requestDto).getId());
+                .incomingItemRequestDtoToItemRequest(requester.getId(), requestDto).getId());
         assertEquals(itemRequest.getDescription(), requestMapper
-                .incomingItemRequestDtoToItemRequest(itemRequest.getId(), requestDto).getDescription());
+                .incomingItemRequestDtoToItemRequest(requester.getId(), requestDto).getDescription());
         assertEquals(itemRequest.getCreated().getClass(), requestMapper
-                .incomingItemRequestDtoToItemRequest(itemRequest.getId(), requestDto).getCreated().getClass());
+                .incomingItemRequestDtoToItemRequest(requester.getId(), requestDto).getCreated().getClass());
         assertEquals(itemRequest.getRequester(), requestMapper
-                .incomingItemRequestDtoToItemRequest(itemRequest.getId(), requestDto).getRequester());
+                .incomingItemRequestDtoToItemRequest(requester.getId(), requestDto).getRequester());
     }
 
     @Test
     void itemToShortItemDtoTest() {
+        item.getItemRequest().setId(1L);
         assertEquals(shortItemDto, requestMapper.itemToShortItemDto(item));
     }
 
