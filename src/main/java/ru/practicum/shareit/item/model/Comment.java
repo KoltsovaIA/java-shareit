@@ -34,7 +34,7 @@ public class Comment {
 
     @NotNull(message = "При создании комментария к вещи необходимо передать id автора.")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "booker_id", nullable = false)
+    @JoinColumn(name = "author_id", nullable = false)
     private User booker;
 
     @Column(name = "created", nullable = false)
