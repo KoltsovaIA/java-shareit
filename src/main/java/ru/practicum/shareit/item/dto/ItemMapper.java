@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.dto;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.ShortBooking;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.service.BookingService;
@@ -19,6 +20,7 @@ import java.util.Objects;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class ItemMapper {
     private final ItemService itemService;
     private final ItemRequestService itemRequestService;
