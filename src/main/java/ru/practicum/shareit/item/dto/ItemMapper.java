@@ -3,7 +3,7 @@ package ru.practicum.shareit.item.dto;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.booking.dto.ShortBooking;
+import ru.practicum.shareit.booking.dto.ShortBookingDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.item.model.Comment;
@@ -70,8 +70,8 @@ public class ItemMapper {
     }
 
     public ItemDto itemToDto(Long userId, Item item) {
-        ShortBooking shortLastBooking = null;
-        ShortBooking shortNextBooking = null;
+        ShortBookingDto shortLastBooking = null;
+        ShortBookingDto shortNextBooking = null;
         Long itemRequestId = null;
         if (item.getItemRequest() != null) {
             itemRequestId = item.getItemRequest().getId();
@@ -80,13 +80,13 @@ public class ItemMapper {
             Booking lastBooking = bookingService.findLastBooking(item.getId(), LocalDateTime.now());
             Booking nextBooking = bookingService.findNextBooking(item.getId(), LocalDateTime.now());
             if (lastBooking != null) {
-                shortLastBooking = ShortBooking.builder()
+                shortLastBooking = ShortBookingDto.builder()
                         .id(lastBooking.getId())
                         .bookerId(lastBooking.getBooker().getId())
                         .build();
             }
             if (nextBooking != null) {
-                shortNextBooking = ShortBooking.builder()
+                shortNextBooking = ShortBookingDto.builder()
                         .id(nextBooking.getId())
                         .bookerId(nextBooking.getBooker().getId())
                         .build();

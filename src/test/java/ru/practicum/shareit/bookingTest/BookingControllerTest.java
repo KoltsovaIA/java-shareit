@@ -44,7 +44,7 @@ class BookingControllerTest {
     @MockBean
     private BookingMapper bookingMapper;
 
-    private static ShortBooker booker;
+    private static ShortBookerDto booker;
     private static IncomingBookingDto incomingBookingDto;
     private static OutgoingBookingDto outgoingBookingDto;
     private static IncomingBookingDto incomingBookingDtoWithoutStart;
@@ -67,7 +67,7 @@ class BookingControllerTest {
                 .email("user@mail.ru")
                 .build();
 
-        booker = ShortBooker.builder()
+        booker = ShortBookerDto.builder()
                 .id(1L)
                 .build();
 
@@ -80,7 +80,7 @@ class BookingControllerTest {
                 .itemRequest(null)
                 .build();
 
-        ShortItem shortitem = ShortItem.builder()
+        ShortItemDto shortitem = ShortItemDto.builder()
                 .id(1L)
                 .name(item.getName())
                 .build();
@@ -119,11 +119,8 @@ class BookingControllerTest {
                 .approved(BookingStatus.WAITING)
                 .build();
 
-        bookingList = new ArrayList<>();
-        bookingList.add(booking);
-
-        bookingDtoList = new ArrayList<>();
-        bookingDtoList.add(outgoingBookingDto);
+        bookingList = new ArrayList<>(List.of(booking));
+        bookingDtoList = new ArrayList<>(List.of(outgoingBookingDto));
     }
 
     @Test

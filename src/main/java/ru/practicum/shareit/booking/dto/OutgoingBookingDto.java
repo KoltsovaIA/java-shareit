@@ -23,10 +23,10 @@ public class OutgoingBookingDto {
     private Long id;
 
     @NotNull(message = "вещь должна быть указана")
-    private ShortItem item;
+    private ShortItemDto item;
 
     @NotNull(message = "заказчик должн быть указан")
-    private ShortBooker booker;
+    private ShortBookerDto booker;
 
     @NotNull(message = "Время начала бронирования должно быть указано")
     @DateTimeFormat(pattern = "YYYY-MM-DDTHH:mm:ss")

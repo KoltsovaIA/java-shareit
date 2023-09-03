@@ -3,6 +3,8 @@ package ru.practicum.shareit.bookingTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
@@ -38,7 +40,7 @@ class BookingServiceTest {
     private static Booking booking;
     private static Item item;
     private static Item wrongItem;
-    private static LinkedList<Booking> bookings;
+    private static List<Booking> bookings;
 
     @BeforeEach
     void beforeAll() {

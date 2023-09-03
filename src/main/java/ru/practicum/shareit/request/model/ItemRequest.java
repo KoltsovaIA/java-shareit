@@ -20,7 +20,7 @@ public class ItemRequest {
     @Column(name = "request_id")
     private Long id;
 
-    @Column(name = "description", nullable = false)
+    @Column(name = "description",  length = 200, nullable = false)
     private String description;
 
     @Column(name = "created_date", nullable = false)

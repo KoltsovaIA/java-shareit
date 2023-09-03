@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.booking.dto.ShortBooking;
+import ru.practicum.shareit.booking.dto.ShortBookingDto;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -23,8 +23,8 @@ public class ItemDto {
     @NotNull(message = "Статус бронирования должен быть указан")
     private Boolean available;
     private Long owner;
-    private ShortBooking lastBooking;
-    private ShortBooking nextBooking;
+    private ShortBookingDto lastBooking;
+    private ShortBookingDto nextBooking;
     private List<OutgoingCommentDto> comments;
     private Long requestId;
 }

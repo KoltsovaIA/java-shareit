@@ -3,7 +3,7 @@ package ru.practicum.shareit.ItemTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import ru.practicum.shareit.booking.dto.ShortBooking;
+import ru.practicum.shareit.booking.dto.ShortBookingDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.service.BookingService;
@@ -63,8 +63,8 @@ class ItemMapperTest {
                 item, booker, BookingStatus.APPROVED);
         nextBooking = new Booking(2L, LocalDateTime.now().plusMonths(1), LocalDateTime.now().plusMonths(2),
                 item, booker, BookingStatus.APPROVED);
-        ShortBooking shortLastBooking = new ShortBooking(lastBooking.getId(), booker.getId());
-        ShortBooking shortNextBooking = new ShortBooking(nextBooking.getId(), booker.getId());
+        ShortBookingDto shortLastBooking = new ShortBookingDto(lastBooking.getId(), booker.getId());
+        ShortBookingDto shortNextBooking = new ShortBookingDto(nextBooking.getId(), booker.getId());
         incomingCommentDto = new IncomingCommentDto(1L, "text", 1L, 1L, LocalDateTime.now());
         comment = new Comment(null, "text", item, user, incomingCommentDto.getCreated());
         commentList = List.of(comment);

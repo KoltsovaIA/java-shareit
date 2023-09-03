@@ -18,7 +18,6 @@ import ru.practicum.shareit.util.OffsetBasedPageRequest;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -104,11 +103,11 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public LinkedList<Booking> getAllBookingByOwnerId(Long ownerId, String state, Short from, Short size) {
+    public List<Booking> getAllBookingByOwnerId(Long ownerId, String state, Short from, Short size) {
         if (!userService.userIsExistsById(ownerId)) {
             throw new UserNotFoundException("Пользователь с id " + ownerId + " не найден");
         }
-        LinkedList<Booking> bookingList = null;
+        List<Booking> bookingList = null;
         Pageable paging = new OffsetBasedPageRequest(from, size, Sort.by("start").descending());
         if (state == null) {
             return bookingRepository.getAllByItemOwnerId(ownerId, paging);
@@ -142,40 +141,43 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public LinkedList<Booking> getAllBookingByUserId(Long userId, String state, Short from, Short size) {
+    public List<Booking> getAllBookingByUserId(Long userId, String state, Short from, Short size) {
+        List<Booking> result;
         if (!userService.userIsExistsById(userId)) {
             throw new UserNotFoundException("Пользователь с id " + userId + " не найден");
         }
-        LinkedList<Booking> bookingList = null;
+        List<Booking> bookingList = null;
         Pageable paging = new OffsetBasedPageRequest(from, size, Sort.by("start").descending());
         if (state == null) {
-            return bookingRepository.getAllByBookerId(userId, paging);
+            result = bookingRepository.getAllByBookerId(userId, paging);
+        } else {
+            List<String> enumNames = Stream.of(Status.values())
+                    .map(Status::name)
+                    .collect(Collectors.toList());
+            if (!enumNames.contains(state)) {
+                throw new IncorrectParameterException("Unknown state: " + state);
+            }
+            LocalDateTime time = LocalDateTime.now();
+            switch (Status.valueOf(state)) {
+                case WAITING:
+                case REJECTED:
+                    bookingList = bookingRepository.getAllByBookerIdAndApproved(userId,
+                            BookingStatus.valueOf(state), paging);
+                    break;
+                case APPROVED:
+                case FUTURE:
+                case ALL:
+                    bookingList = bookingRepository.getAllByBookerId(userId, paging);
+                    break;
+                case CURRENT:
+                    bookingList = bookingRepository.getAllByBookerIdAndStartBeforeAndEndAfter(userId, time, time,
+                            paging);
+                    break;
+                case PAST:
+                    bookingList = bookingRepository.getAllByBookerIdAndEndBefore(userId, time, paging);
+            }
+            result = bookingList;
         }
-        List<String> enumNames = Stream.of(Status.values())
-                .map(Status::name)
-                .collect(Collectors.toList());
-        if (!enumNames.contains(state)) {
-            throw new IncorrectParameterException("Unknown state: " + state);
-        }
-        LocalDateTime time = LocalDateTime.now();
-        switch (Status.valueOf(state)) {
-            case WAITING:
-            case REJECTED:
-                bookingList = bookingRepository.getAllByBookerIdAndApproved(userId,
-                        BookingStatus.valueOf(state), paging);
-                break;
-            case APPROVED:
-            case FUTURE:
-            case ALL:
-                bookingList = bookingRepository.getAllByBookerId(userId, paging);
-                break;
-            case CURRENT:
-                bookingList = bookingRepository.getAllByBookerIdAndStartBeforeAndEndAfter(userId, time, time,
-                        paging);
-                break;
-            case PAST:
-                bookingList = bookingRepository.getAllByBookerIdAndEndBefore(userId, time, paging);
-        }
-        return bookingList;
+        return result;
     }
 }

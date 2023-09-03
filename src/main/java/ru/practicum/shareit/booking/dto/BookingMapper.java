@@ -32,10 +32,10 @@ public class BookingMapper {
     public OutgoingBookingDto bookingToDto(Booking booking) {
         return OutgoingBookingDto.builder()
                 .id(booking.getId())
-                .booker(ShortBooker.builder()
+                .booker(ShortBookerDto.builder()
                         .id(booking.getBooker().getId())
                         .build())
-                .item(ShortItem.builder()
+                .item(ShortItemDto.builder()
                         .id(booking.getItem().getId())
                         .name(booking.getItem().getName())
                         .build())

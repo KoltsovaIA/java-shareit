@@ -38,9 +38,9 @@ class BookingMapperTest {
         bookingMapper = new BookingMapper(itemService, userService);
         User user = new User(5L, "user@email.ru", "User1");
         booker = new User(1L, "user2@email.ru", "User2");
-        ShortBooker shortBooker = new ShortBooker(1L);
+        ShortBookerDto shortBooker = new ShortBookerDto(1L);
         item = new Item(1L, "name", "description", true, user, itemRequest);
-        ShortItem shortItem = new ShortItem(1L, "name");
+        ShortItemDto shortItem = new ShortItemDto(1L, "name");
         itemRequest = new ItemRequest(1L, "description", LocalDateTime.now(), requester);
         incomingBookingDto = new IncomingBookingDto(1L, LocalDateTime.now(), LocalDateTime.now().plusMonths(1));
         booking = new Booking(1L, incomingBookingDto.getStart(), incomingBookingDto.getEnd(), item, booker,

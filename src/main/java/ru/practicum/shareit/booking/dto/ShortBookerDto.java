@@ -7,7 +7,6 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 @Builder
-public class ShortItem {
-    Long id;
-    String name;
+public class ShortBookerDto {
+    private Long id;
 }

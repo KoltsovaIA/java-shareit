@@ -32,7 +32,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public Item createItem(Item item) {
         if (!userService.userIsExistsById(item.getOwner().getId())) {
-            throw new UserNotFoundException("");
+            throw new UserNotFoundException("Вещь не создана, так как такого пользователя не существует");
         }
         return itemRepository.save(item);
     }
@@ -40,7 +40,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public Item updateItem(Item item) {
         if (!Objects.equals(itemRepository.getReferenceById(item.getId()).getOwner(), item.getOwner())) {
-            throw new ItemNotFoundException("");
+            throw new ItemNotFoundException("Пользователь не являющийся владельцем вещи, не может ее обновить");
         }
         return itemRepository.save(item);
     }
