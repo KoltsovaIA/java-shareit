@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -84,11 +84,29 @@ class ItemMapperTest {
                 .thenReturn(user);
         when(itemRequestService.findItemRequestsById(itemDto.getOwner(), itemDto.getRequestId()))
                 .thenReturn(itemRequest);
-        assertEquals(item, itemMapper.dtoToItem(itemDto));
+        assertThat(itemMapper.dtoToItem(itemDto))
+                .hasFieldOrPropertyWithValue("id", item.getId())
+                .hasFieldOrPropertyWithValue("name", item.getName())
+                .hasFieldOrPropertyWithValue("description", item.getDescription())
+                .hasFieldOrPropertyWithValue("available", item.getAvailable())
+                .hasFieldOrPropertyWithValue("owner", item.getOwner())
+                .hasFieldOrPropertyWithValue("itemRequest", item.getItemRequest());
         when(itemService.getItemById(itemDtoWithNullDescription.getId()))
                 .thenReturn(item);
-        assertEquals(item, itemMapper.dtoToItem(itemDtoWithNullDescription));
-        assertEquals(item, itemMapper.dtoToItem(itemDtoWithNullAvailable));
+        assertThat(itemMapper.dtoToItem(itemDtoWithNullDescription))
+                .hasFieldOrPropertyWithValue("id", item.getId())
+                .hasFieldOrPropertyWithValue("name", item.getName())
+                .hasFieldOrPropertyWithValue("description", item.getDescription())
+                .hasFieldOrPropertyWithValue("available", item.getAvailable())
+                .hasFieldOrPropertyWithValue("owner", item.getOwner())
+                .hasFieldOrPropertyWithValue("itemRequest", item.getItemRequest());
+        assertThat(itemMapper.dtoToItem(itemDtoWithNullAvailable))
+                .hasFieldOrPropertyWithValue("id", item.getId())
+                .hasFieldOrPropertyWithValue("name", item.getName())
+                .hasFieldOrPropertyWithValue("description", item.getDescription())
+                .hasFieldOrPropertyWithValue("available", item.getAvailable())
+                .hasFieldOrPropertyWithValue("owner", item.getOwner())
+                .hasFieldOrPropertyWithValue("itemRequest", item.getItemRequest());
     }
 
     @Test
@@ -97,21 +115,37 @@ class ItemMapperTest {
                 .thenReturn(item);
         when(userService.getUserById(incomingCommentDto.getAuthorId()))
                 .thenReturn(user);
-        assertEquals(comment, itemMapper.dtoToComment(incomingCommentDto));
+        assertThat(itemMapper.dtoToComment(incomingCommentDto))
+                .hasFieldOrPropertyWithValue("id", comment.getId())
+                .hasFieldOrPropertyWithValue("text", comment.getText())
+                .hasFieldOrPropertyWithValue("item", comment.getItem())
+                .hasFieldOrPropertyWithValue("booker", comment.getBooker())
+                .hasFieldOrPropertyWithValue("created", comment.getCreated());
     }
 
     @Test
     void commentToDtoTest() {
-        assertEquals(outgoingCommentDto, itemMapper.commentToDto(comment));
+        assertThat(itemMapper.commentToDto(comment))
+                .hasFieldOrPropertyWithValue("id", outgoingCommentDto.getId())
+                .hasFieldOrPropertyWithValue("text", outgoingCommentDto.getText())
+                .hasFieldOrPropertyWithValue("authorName", outgoingCommentDto.getAuthorName())
+                .hasFieldOrPropertyWithValue("created", outgoingCommentDto.getCreated());
     }
 
     @Test
     void listCommentToListDtoTest() {
-        List<OutgoingCommentDto> listCommentDto = new ArrayList<>();
-        listCommentDto.add(outgoingCommentDto);
         List<Comment> listComment = new ArrayList<>();
         listComment.add(comment);
-        assertEquals(listCommentDto, itemMapper.listCommentToListDto(listComment));
+        assertThat(itemMapper.listCommentToListDto(listComment))
+                .isNotEmpty()
+                .hasSize(1)
+                .satisfies(list -> {
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("id", outgoingCommentDto.getId());
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("text", outgoingCommentDto.getText());
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("authorName",
+                            outgoingCommentDto.getAuthorName());
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("created", outgoingCommentDto.getCreated());
+                });
     }
 
     @Test
@@ -122,13 +156,42 @@ class ItemMapperTest {
                 .thenReturn(nextBooking);
         when(itemService.findAllCommentsByItemId(item.getId()))
                 .thenReturn(commentList);
-        assertEquals(itemDto, itemMapper.itemToDto(item.getOwner().getId(), item));
+        assertThat(itemMapper.itemToDto(item.getOwner().getId(), item))
+                .hasFieldOrPropertyWithValue("id", itemDto.getId())
+                .hasFieldOrPropertyWithValue("name", itemDto.getName())
+                .hasFieldOrPropertyWithValue("description", itemDto.getDescription())
+                .hasFieldOrPropertyWithValue("available", itemDto.getAvailable())
+                .hasFieldOrPropertyWithValue("owner", itemDto.getOwner())
+                .hasFieldOrPropertyWithValue("requestId", itemDto.getRequestId())
+                .satisfies(ItemDto -> {
+                    assertThat(ItemDto.getLastBooking()).hasFieldOrPropertyWithValue("id",
+                            itemDto.getLastBooking().getId());
+                    assertThat(ItemDto.getNextBooking()).hasFieldOrPropertyWithValue("bookerId",
+                            itemDto.getLastBooking().getBookerId());
+                })
+                .satisfies(ItemDto -> {
+                    assertThat(ItemDto.getNextBooking()).hasFieldOrPropertyWithValue("id",
+                            itemDto.getNextBooking().getId());
+                    assertThat(ItemDto.getNextBooking()).hasFieldOrPropertyWithValue("bookerId",
+                            itemDto.getNextBooking().getBookerId());
+                })
+                .satisfies(ItemDto -> assertThat(ItemDto.getComments())
+                        .isNotEmpty()
+                        .hasSize(1)
+                        .satisfies(list -> {
+                            assertThat(list.get(0)).hasFieldOrPropertyWithValue("id",
+                                    itemDto.getComments().get(0).getId());
+                            assertThat(list.get(0)).hasFieldOrPropertyWithValue("text",
+                                    itemDto.getComments().get(0).getText());
+                            assertThat(list.get(0)).hasFieldOrPropertyWithValue("authorName",
+                                    itemDto.getComments().get(0).getAuthorName());
+                            assertThat(list.get(0)).hasFieldOrPropertyWithValue("created",
+                                    itemDto.getComments().get(0).getCreated());
+                        }));
     }
 
     @Test
     void listItemToListDtoTest() {
-        List<ItemDto> listItemDto = new ArrayList<>();
-        listItemDto.add(itemDto);
         List<Item> listItem = new ArrayList<>();
         listItem.add(item);
         when(bookingService.findLastBooking(eq(item.getId()), any(LocalDateTime.class)))
@@ -137,6 +200,41 @@ class ItemMapperTest {
                 .thenReturn(nextBooking);
         when(itemService.findAllCommentsByItemId(item.getId()))
                 .thenReturn(commentList);
-        assertEquals(listItemDto, itemMapper.listItemToListDto(listItem));
+        assertThat(itemMapper.listItemToListDto(listItem))
+                .isNotEmpty()
+                .hasSize(1)
+                .satisfies(list -> {
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("id", itemDto.getId());
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("name", itemDto.getName());
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("description", itemDto.getDescription());
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("available", itemDto.getAvailable());
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("owner", itemDto.getOwner());
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("requestId", itemDto.getRequestId());
+                    assertThat(list.get(0)).satisfies(ItemDto -> {
+                        assertThat(ItemDto.getLastBooking()).hasFieldOrPropertyWithValue("id",
+                                itemDto.getLastBooking().getId());
+                        assertThat(ItemDto.getNextBooking()).hasFieldOrPropertyWithValue("bookerId",
+                                itemDto.getLastBooking().getBookerId());
+                    });
+                    assertThat(list.get(0)).satisfies(ItemDto -> {
+                        assertThat(ItemDto.getNextBooking()).hasFieldOrPropertyWithValue("id",
+                                itemDto.getNextBooking().getId());
+                        assertThat(ItemDto.getNextBooking()).hasFieldOrPropertyWithValue("bookerId",
+                                itemDto.getNextBooking().getBookerId());
+                    });
+                    assertThat(list.get(0)).satisfies(ItemDto -> assertThat(ItemDto.getComments())
+                            .isNotEmpty()
+                            .hasSize(1)
+                            .satisfies(listComments -> {
+                                assertThat(listComments.get(0)).hasFieldOrPropertyWithValue("id",
+                                        itemDto.getComments().get(0).getId());
+                                assertThat(listComments.get(0)).hasFieldOrPropertyWithValue("text",
+                                        itemDto.getComments().get(0).getText());
+                                assertThat(listComments.get(0)).hasFieldOrPropertyWithValue("authorName",
+                                        itemDto.getComments().get(0).getAuthorName());
+                                assertThat(listComments.get(0)).hasFieldOrPropertyWithValue("created",
+                                        itemDto.getComments().get(0).getCreated());
+                            }));
+                });
     }
 }

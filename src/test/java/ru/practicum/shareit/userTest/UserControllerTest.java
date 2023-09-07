@@ -229,7 +229,7 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.email").value(correctOutgoingUserDto.getEmail()));
 
         verify(userService, times(1)).createUser(correctUser);
-        verify(userMapper, times(1)).dtoToUser(correctIncomingUserDto);
+        verify(userMapper, times(1)).dtoToUser(any(UserDto.class));
         verify(userMapper, times(1)).userToDto(correctUser);
     }
 

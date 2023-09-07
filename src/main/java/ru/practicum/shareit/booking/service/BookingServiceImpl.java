@@ -44,18 +44,6 @@ public class BookingServiceImpl implements BookingService {
         if (!itemService.itemIsAvailableById(itemId)) {
             throw new IncorrectParameterException("Вещь с ID " + itemId + " недоступна для бронирования");
         }
-        if (booking.getStart().isBefore(LocalDateTime.now())) {
-            throw new IncorrectParameterException("Время начала бронирования не может быть в прошлом");
-        }
-        if (booking.getEnd().isBefore(LocalDateTime.now())) {
-            throw new IncorrectParameterException("время окончания бронирования не может быть в прошлом");
-        }
-        if (booking.getEnd().equals(booking.getStart())) {
-            throw new IncorrectParameterException("время окончания и начала бронирования не могут совпадать");
-        }
-        if (booking.getEnd().isBefore(booking.getStart())) {
-            throw new IncorrectParameterException("время окончания бронирования не может быть раньше");
-        }
         if (Objects.equals(bookerId, itemService.getItemById(itemId).getOwner().getId())) {
             throw new ItemNotFoundException("Владелец не может забронировать свою вещь");
         }
@@ -109,9 +97,6 @@ public class BookingServiceImpl implements BookingService {
         }
         List<Booking> bookingList = null;
         Pageable paging = new OffsetBasedPageRequest(from, size, Sort.by("start").descending());
-        if (state == null) {
-            return bookingRepository.getAllByItemOwnerId(ownerId, paging);
-        }
         List<String> enumNames = Stream.of(Status.values())
                 .map(Status::name)
                 .collect(Collectors.toList());
@@ -148,36 +133,32 @@ public class BookingServiceImpl implements BookingService {
         }
         List<Booking> bookingList = null;
         Pageable paging = new OffsetBasedPageRequest(from, size, Sort.by("start").descending());
-        if (state == null) {
-            result = bookingRepository.getAllByBookerId(userId, paging);
-        } else {
-            List<String> enumNames = Stream.of(Status.values())
-                    .map(Status::name)
-                    .collect(Collectors.toList());
-            if (!enumNames.contains(state)) {
-                throw new IncorrectParameterException("Unknown state: " + state);
-            }
-            LocalDateTime time = LocalDateTime.now();
-            switch (Status.valueOf(state)) {
-                case WAITING:
-                case REJECTED:
-                    bookingList = bookingRepository.getAllByBookerIdAndApproved(userId,
-                            BookingStatus.valueOf(state), paging);
-                    break;
-                case APPROVED:
-                case FUTURE:
-                case ALL:
-                    bookingList = bookingRepository.getAllByBookerId(userId, paging);
-                    break;
-                case CURRENT:
-                    bookingList = bookingRepository.getAllByBookerIdAndStartBeforeAndEndAfter(userId, time, time,
-                            paging);
-                    break;
-                case PAST:
-                    bookingList = bookingRepository.getAllByBookerIdAndEndBefore(userId, time, paging);
-            }
-            result = bookingList;
+        List<String> enumNames = Stream.of(Status.values())
+                .map(Status::name)
+                .collect(Collectors.toList());
+        if (!enumNames.contains(state)) {
+            throw new IncorrectParameterException("Unknown state: " + state);
         }
+        LocalDateTime time = LocalDateTime.now();
+        switch (Status.valueOf(state)) {
+            case WAITING:
+            case REJECTED:
+                bookingList = bookingRepository.getAllByBookerIdAndApproved(userId,
+                        BookingStatus.valueOf(state), paging);
+                break;
+            case APPROVED:
+            case FUTURE:
+            case ALL:
+                bookingList = bookingRepository.getAllByBookerId(userId, paging);
+                break;
+            case CURRENT:
+                bookingList = bookingRepository.getAllByBookerIdAndStartBeforeAndEndAfter(userId, time, time,
+                        paging);
+                break;
+            case PAST:
+                bookingList = bookingRepository.getAllByBookerIdAndEndBefore(userId, time, paging);
+        }
+        result = bookingList;
         return result;
     }
 }

@@ -14,23 +14,24 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static ru.practicum.shareit.util.Constants.USER_ID_HEADER;
+
 @RestController
 @RequestMapping("/items")
 @AllArgsConstructor
 public class ItemController {
-    private static final String USER_ID_HEADER = "X-Sharer-User-Id";
     private final ItemService itemService;
     private final ItemMapper itemMapper;
 
     @PostMapping
-    public ItemDto createItem(@NotNull @RequestHeader(USER_ID_HEADER) Long userId,
+    public ItemDto createItem(@RequestHeader(USER_ID_HEADER) Long userId,
                               @Valid @RequestBody ItemDto itemDto) {
         itemDto.setOwner(userId);
         return itemMapper.itemToDto(userId, itemService.createItem(itemMapper.dtoToItem(itemDto)));
     }
 
     @PatchMapping({"/{id}"})
-    public ItemDto updateItemById(@NotNull @RequestHeader(USER_ID_HEADER) Long userId,
+    public ItemDto updateItemById(@RequestHeader(USER_ID_HEADER) Long userId,
                                   @NotNull @PathVariable Long id,
                                   @RequestBody ItemDto itemDto) {
         itemDto.setId(id);
@@ -39,13 +40,13 @@ public class ItemController {
     }
 
     @GetMapping({"/{id}"})
-    public ItemDto getItemById(@NotNull @RequestHeader(USER_ID_HEADER) Long userId,
+    public ItemDto getItemById(@RequestHeader(USER_ID_HEADER) Long userId,
                                @NotNull @PathVariable Long id) {
         return itemMapper.itemToDto(userId, itemService.getItemById(id));
     }
 
     @GetMapping
-    public List<ItemDto> findAllByOwner(@NotNull @RequestHeader(USER_ID_HEADER) Long owner) {
+    public List<ItemDto> findAllByOwner(@RequestHeader(USER_ID_HEADER) Long owner) {
         return itemMapper.listItemToListDto(itemService.getAllByOwner(owner));
     }
 
@@ -55,7 +56,7 @@ public class ItemController {
     }
 
     @PostMapping({"/{itemId}/comment"})
-    public OutgoingCommentDto createComment(@NotNull @RequestHeader(USER_ID_HEADER) Long userId,
+    public OutgoingCommentDto createComment(@RequestHeader(USER_ID_HEADER) Long userId,
                                             @NotNull @PathVariable(name = "itemId") long itemId,
                                             @Valid @RequestBody IncomingCommentDto incomingCommentDto) {
         incomingCommentDto.setAuthorId(userId);

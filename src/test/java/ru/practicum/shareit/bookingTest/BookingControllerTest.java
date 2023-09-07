@@ -29,6 +29,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static ru.practicum.shareit.util.Constants.USER_ID_HEADER;
 
 @WebMvcTest(controllers = BookingController.class)
 class BookingControllerTest {
@@ -52,14 +53,13 @@ class BookingControllerTest {
     private static Booking booking;
     private static List<Booking> bookingList;
     private static List<OutgoingBookingDto> bookingDtoList;
-    public static final String USER_ID_HEADER = "X-Sharer-User-Id";
     public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
     @BeforeAll
     static void beforeAll() {
         LocalDateTime futureOneMonth = LocalDateTime.now().plusMonths(1).withNano(0);
         LocalDateTime futureTwoMonth = LocalDateTime.now().plusDays(2).withNano(0);
-        LocalDateTime now = LocalDateTime.now().withNano(0);
+        LocalDateTime now = LocalDateTime.now().plusMinutes(3).withNano(0);
 
         User user = User.builder()
                 .id(1L)
@@ -250,7 +250,7 @@ class BookingControllerTest {
 
     @Test
     void getAllBookingByOwnerIdTest() throws Exception {
-        when(bookingService.getAllBookingByOwnerId(anyLong(), eq(null), any(Short.class), any(Short.class)))
+        when(bookingService.getAllBookingByOwnerId(anyLong(), eq("ALL"), any(Short.class), any(Short.class)))
                 .thenReturn(bookingList);
         when(bookingMapper.listBookingToListDto(anyList()))
                 .thenReturn(bookingDtoList);
@@ -266,7 +266,7 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.size()").value(1))
                 .andExpect(jsonPath("$.[0].id").value(1L));
         verify(bookingService, times(1))
-                .getAllBookingByOwnerId(anyLong(), eq(null), any(Short.class), any(Short.class));
+                .getAllBookingByOwnerId(anyLong(), eq("ALL"), any(Short.class), any(Short.class));
         verify(bookingMapper, times(1)).listBookingToListDto(anyList());
     }
 
@@ -281,7 +281,7 @@ class BookingControllerTest {
 
     @Test
     void shouldGetBookingWithGetUserBookings() throws Exception {
-        when(bookingService.getAllBookingByUserId(anyLong(), eq(null), any(Short.class), any(Short.class)))
+        when(bookingService.getAllBookingByUserId(anyLong(), eq("ALL"), any(Short.class), any(Short.class)))
                 .thenReturn(bookingList);
         when(bookingMapper.listBookingToListDto(anyList()))
                 .thenReturn(bookingDtoList);
@@ -295,7 +295,7 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.size()").value(1))
                 .andExpect(jsonPath("$.[0].id").value(1L));
         verify(bookingService, times(1))
-                .getAllBookingByUserId(anyLong(), eq(null), any(Short.class), any(Short.class));
+                .getAllBookingByUserId(anyLong(), eq("ALL"), any(Short.class), any(Short.class));
         verify(bookingMapper, times(1)).listBookingToListDto(anyList());
     }
 
@@ -430,7 +430,7 @@ class BookingControllerTest {
 
     @Test
     void getAllBookingByOwnerIdBookingsTest() throws Exception {
-        when(bookingService.getAllBookingByOwnerId(anyLong(), eq(null), any(Short.class), any(Short.class)))
+        when(bookingService.getAllBookingByOwnerId(anyLong(), eq("ALL"), any(Short.class), any(Short.class)))
                 .thenReturn(bookingList);
         when(bookingMapper.listBookingToListDto(anyList()))
                 .thenReturn(bookingDtoList);
@@ -444,7 +444,7 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.size()").value(1))
                 .andExpect(jsonPath("$.[0].id").value(1L));
         verify(bookingService, times(1))
-                .getAllBookingByOwnerId(anyLong(), eq(null), any(Short.class), any(Short.class));
+                .getAllBookingByOwnerId(anyLong(), eq("ALL"), any(Short.class), any(Short.class));
         verify(bookingMapper, times(1)).listBookingToListDto(anyList());
     }
 

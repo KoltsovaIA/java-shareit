@@ -11,7 +11,7 @@ import ru.practicum.shareit.user.service.UserService;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class UserMapperTest {
     private static UserMapper userMapper;
@@ -28,20 +28,31 @@ class UserMapperTest {
 
     @Test
     void dtoToUser() {
-        assertEquals(user, userMapper.dtoToUser(userDto));
+        assertThat(userMapper.dtoToUser(userDto))
+                .hasFieldOrPropertyWithValue("id", user.getId())
+                .hasFieldOrPropertyWithValue("email", user.getEmail())
+                .hasFieldOrPropertyWithValue("name", user.getName());
     }
 
     @Test
     void userToDto() {
-        assertEquals(userDto, userMapper.userToDto(user));
+        assertThat(userMapper.userToDto(user))
+                .hasFieldOrPropertyWithValue("id", userDto.getId())
+                .hasFieldOrPropertyWithValue("email", userDto.getEmail())
+                .hasFieldOrPropertyWithValue("name", userDto.getName());
     }
 
     @Test
     void listUserToListDto() {
-        List<UserDto> usersDto = new ArrayList<>();
-        usersDto.add(userDto);
         List<User> users = new ArrayList<>();
         users.add(user);
-        assertEquals(usersDto, userMapper.listUserToListDto(users));
+        assertThat(userMapper.listUserToListDto(users))
+                .isNotEmpty()
+                .hasSize(1)
+                .satisfies(list -> {
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("id", userDto.getId());
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("name", userDto.getName());
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("email", userDto.getEmail());
+                });
     }
 }

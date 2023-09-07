@@ -39,7 +39,8 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Item updateItem(Item item) {
-        if (!Objects.equals(itemRepository.getReferenceById(item.getId()).getOwner(), item.getOwner())) {
+        if (!Objects.equals(itemRepository.getReferenceById(item.getId()).getOwner().getId(),
+                item.getOwner().getId())) {
             throw new ItemNotFoundException("Пользователь не являющийся владельцем вещи, не может ее обновить");
         }
         return itemRepository.save(item);

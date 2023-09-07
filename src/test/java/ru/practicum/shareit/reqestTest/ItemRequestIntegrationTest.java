@@ -66,7 +66,10 @@ class ItemRequestIntegrationTest {
                 .createQuery("select r from ItemRequest r where r.id = :id", ItemRequest.class);
         ItemRequest requestFromDb = query.setParameter("id", 1L).getSingleResult();
         assertThat(itemRequest.getDescription(), equalTo(requestFromDb.getDescription()));
-        assertThat(user, equalTo(requestFromDb.getRequester()));
+        Assertions.assertThat(requestFromDb.getRequester())
+                .hasFieldOrPropertyWithValue("id", user.getId())
+                .hasFieldOrPropertyWithValue("email", user.getEmail())
+                .hasFieldOrPropertyWithValue("name", user.getName());
     }
 
     @Test

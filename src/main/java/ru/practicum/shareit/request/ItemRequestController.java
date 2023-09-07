@@ -13,12 +13,13 @@ import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
+import static ru.practicum.shareit.util.Constants.USER_ID_HEADER;
+
 @RestController
 @RequestMapping(path = "/requests")
 @RequiredArgsConstructor
 @Validated
 public class ItemRequestController {
-    private static final String USER_ID_HEADER = "X-Sharer-User-Id";
     private final ItemRequestService itemRequestService;
     private final RequestMapper requestMapper;
 
@@ -37,9 +38,9 @@ public class ItemRequestController {
 
     @GetMapping("/all")
     public List<OutgoingItemRequestDto> findAllItemRequests(@RequestHeader(USER_ID_HEADER) long userId,
-                                                            @RequestParam(defaultValue = "0", required = false)
+                                                            @RequestParam(defaultValue = "0")
                                                             @PositiveOrZero Short from,
-                                                            @RequestParam(defaultValue = "32", required = false)
+                                                            @RequestParam(defaultValue = "32")
                                                             @Positive Short size) {
         return requestMapper.listRequestToListDto(itemRequestService.getAllItemRequest(userId, from, size));
     }

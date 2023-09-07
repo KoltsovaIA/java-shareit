@@ -88,24 +88,6 @@ class BookingServiceTest {
         assertThrows(IncorrectParameterException.class, () -> bookingService.createBooking(booking),
                 "Метод createBooking работает некорректно при запросе вещи недоступной для бронирования");
         item.setAvailable(true);
-        booking.setStart(LocalDateTime.now().minusMonths(1));
-        assertThrows(IncorrectParameterException.class, () -> bookingService.createBooking(booking),
-                "Метод createBooking работает некорректно при запросе с некоректной датой начала бронирования");
-        booking.setStart(LocalDateTime.now().plusMonths(1));
-        booking.setEnd(LocalDateTime.now().minusMonths(1));
-        assertThrows(IncorrectParameterException.class, () -> bookingService.createBooking(booking),
-                "Метод createBooking работает некорректно при запросе с некоректной датой окончания брони");
-        booking.setStart(LocalDateTime.now().plusMonths(1));
-        booking.setEnd(booking.getStart());
-        assertThrows(IncorrectParameterException.class, () -> bookingService.createBooking(booking),
-                "Метод createBooking работает некорректно при запросе с некоректными датами начала " +
-                        "и окончания бронирования");
-        booking.setStart(LocalDateTime.now().plusMonths(2));
-        booking.setEnd(LocalDateTime.now().plusMonths(1));
-        assertThrows(IncorrectParameterException.class, () -> bookingService.createBooking(booking),
-                "Метод createBooking работает некорректно при запросе с некоректными датами начала " +
-                        "и окончания бронирования");
-        booking.setEnd(LocalDateTime.now().plusMonths(3L));
         owner = booker;
         item.setOwner(booker);
         assertThrows(ItemNotFoundException.class, () -> bookingService.createBooking(booking),
@@ -178,7 +160,6 @@ class BookingServiceTest {
                 .thenReturn(bookings);
         when(userService.userIsExistsById(owner.getId()))
                 .thenReturn(true);
-        assertEquals(bookings, bookingService.getAllBookingByOwnerId(owner.getId(), null, (short) 0, (short) 30));
         assertEquals(bookings, bookingService.getAllBookingByOwnerId(owner.getId(), "WAITING", (short) 0,
                 (short) 30));
         assertEquals(bookings, bookingService.getAllBookingByOwnerId(owner.getId(), "REJECTED", (short) 0,
@@ -221,7 +202,6 @@ class BookingServiceTest {
                 .thenReturn(bookings);
         when(userService.userIsExistsById(booker.getId()))
                 .thenReturn(true);
-        assertEquals(bookings, bookingService.getAllBookingByUserId(booker.getId(), null, (short) 0, (short) 30));
         assertEquals(bookings, bookingService.getAllBookingByUserId(booker.getId(), "WAITING", (short) 0,
                 (short) 30));
         assertEquals(bookings, bookingService.getAllBookingByUserId(booker.getId(), "REJECTED", (short) 0,

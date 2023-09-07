@@ -15,7 +15,7 @@ import ru.practicum.shareit.user.service.UserService;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 class BookingMapperTest {
@@ -58,20 +58,52 @@ class BookingMapperTest {
                 .thenReturn(booker);
         when(itemService.getItemById(incomingBookingDto.getItemId()))
                 .thenReturn(item);
-        assertEquals(bookingFromDto, bookingMapper.dtoToBooking(booker.getId(), incomingBookingDto));
+        assertThat(bookingMapper.dtoToBooking(booker.getId(), incomingBookingDto))
+                .hasFieldOrPropertyWithValue("id", bookingFromDto.getId())
+                .hasFieldOrPropertyWithValue("start", bookingFromDto.getStart())
+                .hasFieldOrPropertyWithValue("end", bookingFromDto.getEnd())
+                .hasFieldOrPropertyWithValue("item", bookingFromDto.getItem())
+                .hasFieldOrPropertyWithValue("booker", bookingFromDto.getBooker())
+                .hasFieldOrPropertyWithValue("approved", bookingFromDto.getApproved());
     }
 
     @Test
     void bookingToDtoTest() {
-        assertEquals(bookingDto, bookingMapper.bookingToDto(booking));
+        assertThat(bookingMapper.bookingToDto(booking))
+                .hasFieldOrPropertyWithValue("id", bookingDto.getId())
+                .hasFieldOrPropertyWithValue("start", bookingDto.getStart())
+                .hasFieldOrPropertyWithValue("end", bookingDto.getEnd())
+                .hasFieldOrPropertyWithValue("status", bookingDto.getStatus())
+                .satisfies(OutgoingBookingDto -> {
+                    assertThat(OutgoingBookingDto.getItem()).hasFieldOrPropertyWithValue("id",
+                            bookingDto.getItem().getId());
+                    assertThat(OutgoingBookingDto.getItem()).hasFieldOrPropertyWithValue("name",
+                            bookingDto.getItem().getName());
+                })
+                .satisfies(OutgoingBookingDto -> assertThat(OutgoingBookingDto.getBooker())
+                        .hasFieldOrPropertyWithValue("id", bookingDto.getBooker().getId()));
     }
 
     @Test
     void listBookingToListDtoTest() {
-        LinkedList<OutgoingBookingDto> listBookingDto = new LinkedList<>();
-        listBookingDto.add(bookingDto);
         LinkedList<Booking> listBooking = new LinkedList<>();
         listBooking.add(booking);
-        assertEquals(listBookingDto, bookingMapper.listBookingToListDto(listBooking));
+        assertThat(bookingMapper.listBookingToListDto(listBooking))
+                .isNotEmpty()
+                .hasSize(1)
+                .satisfies(list -> {
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("id", bookingDto.getId());
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("start", bookingDto.getStart());
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("end", bookingDto.getEnd());
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("status", bookingDto.getStatus());
+                    assertThat(list.get(0)).satisfies(OutgoingBookingDto -> {
+                        assertThat(OutgoingBookingDto.getItem()).hasFieldOrPropertyWithValue("id",
+                                bookingDto.getItem().getId());
+                        assertThat(OutgoingBookingDto.getItem()).hasFieldOrPropertyWithValue("name",
+                                bookingDto.getItem().getName());
+                    });
+                    assertThat(list.get(0)).satisfies(OutgoingBookingDto -> assertThat(OutgoingBookingDto.getBooker())
+                            .hasFieldOrPropertyWithValue("id", bookingDto.getBooker().getId()));
+                });
     }
 }

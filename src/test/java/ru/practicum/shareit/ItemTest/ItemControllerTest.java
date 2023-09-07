@@ -29,6 +29,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static ru.practicum.shareit.util.Constants.USER_ID_HEADER;
 
 @WebMvcTest(controllers = ItemController.class)
 class ItemControllerTest {
@@ -50,7 +51,6 @@ class ItemControllerTest {
     private static ItemDto itemDtoWithNoName;
     private static ItemDto itemDtoWithNoDescription;
     private static ItemDto itemDtoWithNoAvailable;
-    public static final String USER_ID_HEADER = "X-Sharer-User-Id";
     private static List<Item> itemsList;
     private static List<ItemDto> itemsListDto;
     private static Comment comment;
