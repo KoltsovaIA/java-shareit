@@ -9,8 +9,8 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 public class OutgoingBookingDto {
-
     private Long id;
     private ShortItemDto item;
     private ShortBookerDto booker;

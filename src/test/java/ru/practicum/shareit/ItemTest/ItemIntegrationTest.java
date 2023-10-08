@@ -8,8 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.item.dto.IncomingItemDto;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
@@ -29,32 +32,52 @@ class ItemIntegrationTest {
     private final ItemService itemService;
     private final UserService userService;
     private final EntityManager entityManager;
+    private static IncomingItemDto itemDto;
     private static Item item;
+    private static IncomingItemDto itemDto2;
     private static Item item2;
+    private static UserDto userDto;
     private static User user;
 
     @BeforeAll
     static void beforeAll() {
-        user = User.builder()
-                .id(1L)
+        userDto = UserDto.builder()
                 .name("name")
                 .email("user@email.ru")
                 .build();
 
-        item = Item.builder()
+        user = User.builder()
                 .id(1L)
+                .name(userDto.getName())
+                .email(userDto.getEmail())
+                .build();
+
+        itemDto = IncomingItemDto.builder()
                 .name("name")
                 .description("description")
                 .available(true)
+                .build();
+
+        item = Item.builder()
+                .id(1L)
+                .name(itemDto.getName())
+                .description(itemDto.getDescription())
+                .available(itemDto.getAvailable())
                 .owner(user)
                 .itemRequest(null)
                 .build();
 
-        item2 = Item.builder()
-                .id(2L)
+        itemDto2 = IncomingItemDto.builder()
                 .name("name2")
                 .description("description2")
                 .available(true)
+                .build();
+
+        item2 = Item.builder()
+                .id(2L)
+                .name(itemDto2.getName())
+                .description(itemDto2.getDescription())
+                .available(itemDto2.getAvailable())
                 .owner(user)
                 .itemRequest(null)
                 .build();
@@ -62,47 +85,47 @@ class ItemIntegrationTest {
 
     @Test
     void createItemTest() {
-        userService.createUser(user);
-        itemService.createItem(item);
+        userService.createUser(userDto);
+        itemService.createItem(user.getId(), itemDto);
         TypedQuery<Item> query = entityManager.createQuery("select i from Item i where i.id = :id", Item.class);
-        Item itemFromDb = query.setParameter("id", 1L).getSingleResult();
-        assertThat(item.getName(), equalTo(itemFromDb.getName()));
-        assertThat(item.getDescription(), equalTo(itemFromDb.getDescription()));
-        assertThat(item.getAvailable(), equalTo(itemFromDb.getAvailable()));
-        assertNull(item.getItemRequest());
+        Item itemFromDb = query.setParameter("id", user.getId()).getSingleResult();
+        assertThat(itemDto.getName(), equalTo(itemFromDb.getName()));
+        assertThat(itemDto.getDescription(), equalTo(itemFromDb.getDescription()));
+        assertThat(itemDto.getAvailable(), equalTo(itemFromDb.getAvailable()));
+        assertNull(itemFromDb.getItemRequest());
     }
 
     @Test
     void updateItemTest() {
-        userService.createUser(user);
-        itemService.createItem(item);
-        item.setName("newName");
-        itemService.updateItem(item);
+        userService.createUser(userDto);
+        itemService.createItem(user.getId(), itemDto);
+        itemDto.setName("newName");
+        itemService.updateItem(user.getId(), item.getId(), itemDto);
         TypedQuery<Item> query = entityManager.createQuery("select i from Item i where i.id = :id", Item.class);
-        Item itemFromDb = query.setParameter("id", 1L).getSingleResult();
-        assertThat(item.getName(), equalTo(itemFromDb.getName()));
-        assertThat(item.getDescription(), equalTo(itemFromDb.getDescription()));
-        assertThat(item.getAvailable(), equalTo(itemFromDb.getAvailable()));
+        Item itemFromDb = query.setParameter("id", user.getId()).getSingleResult();
+        assertThat(itemDto.getName(), equalTo(itemFromDb.getName()));
+        assertThat(itemDto.getDescription(), equalTo(itemFromDb.getDescription()));
+        assertThat(itemDto.getAvailable(), equalTo(itemFromDb.getAvailable()));
         assertNull(itemFromDb.getItemRequest());
     }
 
     @Test
     void getItemByIdTest() {
-        userService.createUser(user);
-        itemService.createItem(item);
-        Item itemFromDb = itemService.getItemById(1L);
-        assertThat(item.getName(), equalTo(itemFromDb.getName()));
-        assertThat(item.getDescription(), equalTo(itemFromDb.getDescription()));
-        assertThat(item.getAvailable(), equalTo(itemFromDb.getAvailable()));
-        assertNull(item.getItemRequest());
+        userService.createUser(userDto);
+        itemService.createItem(user.getId(), itemDto);
+        ItemDto outgoingItemDto = itemService.getItemById(user.getId(), item.getId());
+        assertThat(itemDto.getName(), equalTo(outgoingItemDto.getName()));
+        assertThat(itemDto.getDescription(), equalTo(outgoingItemDto.getDescription()));
+        assertThat(itemDto.getAvailable(), equalTo(outgoingItemDto.getAvailable()));
+        assertNull(outgoingItemDto.getRequestId());
     }
 
     @Test
     void getAllByOwnerTest() {
-        userService.createUser(user);
-        itemService.createItem(item);
-        itemService.createItem(item2);
-        List<Item> items = itemService.getAllByOwner(1L);
+        userService.createUser(userDto);
+        itemService.createItem(user.getId(), itemDto);
+        itemService.createItem(user.getId(), itemDto2);
+        List<ItemDto> items = itemService.getAllByOwner(user.getId());
         Assertions.assertThat(items)
                 .isNotEmpty()
                 .hasSize(2)
@@ -116,10 +139,10 @@ class ItemIntegrationTest {
 
     @Test
     void searchItemsTest() {
-        userService.createUser(user);
-        itemService.createItem(item);
-        itemService.createItem(item2);
-        List<Item> items = itemService.searchItems("name2");
+        userService.createUser(userDto);
+        itemService.createItem(user.getId(), itemDto);
+        itemService.createItem(user.getId(), itemDto2);
+        List<ItemDto> items = itemService.searchItems("name2");
         Assertions.assertThat(items)
                 .isNotEmpty()
                 .hasSize(1)

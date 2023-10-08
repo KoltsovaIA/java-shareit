@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(exclude = {"item", "booker"})
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

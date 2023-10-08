@@ -10,6 +10,7 @@ import javax.validation.constraints.Size;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 public class IncomingItemRequestDto {
     @Size(max = 512)
     @NotBlank(message = "При создании нового запроса вещей, поле описания не может быть пустым")

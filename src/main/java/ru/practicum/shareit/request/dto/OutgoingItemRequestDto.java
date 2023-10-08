@@ -10,6 +10,8 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
+@ToString
 public class OutgoingItemRequestDto {
     private Long id;
     private String description;

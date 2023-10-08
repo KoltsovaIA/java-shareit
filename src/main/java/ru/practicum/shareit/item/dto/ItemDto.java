@@ -3,8 +3,6 @@ package ru.practicum.shareit.item.dto;
 import lombok.*;
 import ru.practicum.shareit.booking.dto.ShortBookingDto;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Getter
@@ -12,13 +10,11 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 public class ItemDto {
     private Long id;
-    @NotBlank(message = "Название вещи должно быть указано")
     private String name;
-    @NotBlank(message = "Описание должно быть добавлено")
     private String description;
-    @NotNull(message = "Статус бронирования должен быть указан")
     private Boolean available;
     private Long owner;
     private ShortBookingDto lastBooking;

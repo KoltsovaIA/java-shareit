@@ -3,6 +3,7 @@ package ru.practicum.shareit.userTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.exception.EmailAlreadyExistException;
 import ru.practicum.shareit.user.exception.UserNotFoundException;
 import ru.practicum.shareit.user.model.User;
@@ -20,19 +21,21 @@ class UserServiceTest {
     private static UserRepository userRepository;
     private static UserService userService;
     private static User user;
+    private static UserDto userDto;
 
     @BeforeEach
     void beforeAll() {
         userRepository = Mockito.mock(UserRepository.class);
         userService = new UserServiceImpl(userRepository);
         user = new User(1L, "user@email.ru", "User1");
+        userDto = new UserDto(null, "user@email.ru", "User1");
     }
 
     @Test
     void createUserTest() {
         when(userRepository.save(any(User.class)))
                 .thenReturn(user);
-        User createdUser = userService.createUser(user);
+        User createdUser = userService.createUser(userDto);
         assertEquals(user, createdUser);
     }
 
@@ -55,9 +58,10 @@ class UserServiceTest {
                 .thenReturn(true);
         when(userRepository.save(any(User.class)))
                 .thenReturn(user);
-        assertEquals(user, userService.updateUser(user));
-        User updatetUser = new User(1L, "updatetUser@email.ru", "User1");
-        assertThrows(EmailAlreadyExistException.class, () -> userService.updateUser(updatetUser));
+        userDto.setId(1L);
+        assertEquals(user, userService.updateUser(userDto));
+        UserDto updateUser = new UserDto(1L, "updatetUser@email.ru", "User1");
+        assertThrows(EmailAlreadyExistException.class, () -> userService.updateUser(updateUser));
     }
 
     @Test

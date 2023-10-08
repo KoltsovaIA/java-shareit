@@ -10,8 +10,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.item.ItemController;
 import ru.practicum.shareit.item.dto.IncomingCommentDto;
+import ru.practicum.shareit.item.dto.IncomingItemDto;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.dto.OutgoingCommentDto;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
@@ -42,16 +42,12 @@ class ItemControllerTest {
     @MockBean
     private ItemService itemService;
 
-    @MockBean
-    private ItemMapper itemMapper;
-
     private static ItemDto correctIncomingItemDto;
     private static ItemDto correctOutgoingItemDto;
     private static Item item;
     private static ItemDto itemDtoWithNoName;
     private static ItemDto itemDtoWithNoDescription;
     private static ItemDto itemDtoWithNoAvailable;
-    private static List<Item> itemsList;
     private static List<ItemDto> itemsListDto;
     private static Comment comment;
     private static OutgoingCommentDto outgoingCommentDto;
@@ -64,25 +60,11 @@ class ItemControllerTest {
                 .available(true)
                 .build();
 
-        correctOutgoingItemDto = ItemDto.builder()
-                .id(1L)
-                .name("name")
-                .description("description")
-                .available(true)
-                .build();
-
-        ItemDto correctOutgoingItemDto2 = ItemDto.builder()
-                .id(2L)
-                .name("name2")
-                .description("description2")
-                .available(true)
-                .build();
-
         item = Item.builder()
                 .id(1L)
-                .name("name")
-                .description("description")
-                .available(true)
+                .name(correctIncomingItemDto.getName())
+                .description(correctIncomingItemDto.getDescription())
+                .available(correctIncomingItemDto.getAvailable())
                 .owner(new User(1L, "user1@mail.ru", "name"))
                 .itemRequest(null)
                 .build();
@@ -94,6 +76,20 @@ class ItemControllerTest {
                 .available(true)
                 .owner(new User(1L, "user1@mail.ru", "name"))
                 .itemRequest(null)
+                .build();
+
+        correctOutgoingItemDto = ItemDto.builder()
+                .id(item.getId())
+                .name(item.getName())
+                .description(item.getDescription())
+                .available(item.getAvailable())
+                .build();
+
+        ItemDto correctOutgoingItemDto2 = ItemDto.builder()
+                .id(item2.getId())
+                .name(item2.getName())
+                .description(item2.getDescription())
+                .available(item2.getAvailable())
                 .build();
 
         itemDtoWithNoName = ItemDto.builder()
@@ -110,9 +106,6 @@ class ItemControllerTest {
                 .name("name")
                 .description("description")
                 .build();
-        itemsList = new ArrayList<>();
-        itemsList.add(item);
-        itemsList.add(item2);
 
         itemsListDto = new ArrayList<>();
         itemsListDto.add(correctOutgoingItemDto);
@@ -121,6 +114,7 @@ class ItemControllerTest {
         comment = Comment.builder()
                 .text("comment")
                 .build();
+
         outgoingCommentDto = OutgoingCommentDto.builder()
                 .id(1L)
                 .text("text")
@@ -134,7 +128,7 @@ class ItemControllerTest {
         mockMvc.perform(post("/items")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError());
-        verify(itemService, never()).createItem(any(Item.class));
+        verify(itemService, never()).createItem(anyLong(), any(IncomingItemDto.class));
     }
 
     @Test
@@ -145,7 +139,7 @@ class ItemControllerTest {
                         .content(jsonItem)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
-        verify(itemService, never()).createItem(any(Item.class));
+        verify(itemService, never()).createItem(anyLong(), any(IncomingItemDto.class));
     }
 
     @Test
@@ -156,7 +150,7 @@ class ItemControllerTest {
                         .content(jsonItem)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
-        verify(itemService, never()).createItem(any(Item.class));
+        verify(itemService, never()).createItem(anyLong(), any(IncomingItemDto.class));
     }
 
     @Test
@@ -167,17 +161,13 @@ class ItemControllerTest {
                         .content(jsonItem)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
-        verify(itemService, never()).createItem(any(Item.class));
+        verify(itemService, never()).createItem(anyLong(), any(IncomingItemDto.class));
     }
 
     @Test
     void createItemTest() throws Exception {
-        when(itemService.createItem(any(Item.class)))
-                .thenReturn(item);
-        when(itemMapper.itemToDto(eq(item.getOwner().getId()), any(Item.class)))
+        when(itemService.createItem(anyLong(), any(IncomingItemDto.class)))
                 .thenReturn(correctOutgoingItemDto);
-        when(itemMapper.dtoToItem(any(ItemDto.class)))
-                .thenReturn(item);
         String jsonItem = objectMapper.writeValueAsString(correctIncomingItemDto);
         mockMvc.perform(post("/items")
                         .header(USER_ID_HEADER, "1")
@@ -185,12 +175,10 @@ class ItemControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(item.getId()))
-                .andExpect(jsonPath("$.name").value(item.getName()))
-                .andExpect(jsonPath("$.description").value(item.getDescription()))
-                .andExpect(jsonPath("$.available").value(item.getAvailable()));
-        verify(itemService, times(1)).createItem(any(Item.class));
-        verify(itemMapper, times(1)).itemToDto(eq(item.getOwner().getId()), any(Item.class));
-        verify(itemMapper, times(1)).dtoToItem(any(ItemDto.class));
+                .andExpect(jsonPath("$.name").value(correctIncomingItemDto.getName()))
+                .andExpect(jsonPath("$.description").value(correctIncomingItemDto.getDescription()))
+                .andExpect(jsonPath("$.available").value(correctIncomingItemDto.getAvailable()));
+        verify(itemService, times(1)).createItem(anyLong(), any(IncomingItemDto.class));
     }
 
     @Test
@@ -198,17 +186,13 @@ class ItemControllerTest {
         mockMvc.perform(patch("/items/1")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError());
-        verify(itemService, never()).updateItem(any(Item.class));
+        verify(itemService, never()).updateItem(anyLong(), anyLong(), any(IncomingItemDto.class));
     }
 
     @Test
     void updateItemTest() throws Exception {
-        when(itemService.updateItem(any(Item.class)))
-                .thenReturn(item);
-        when(itemMapper.itemToDto(eq(item.getOwner().getId()), any(Item.class)))
+        when(itemService.updateItem(anyLong(), anyLong(), any(IncomingItemDto.class)))
                 .thenReturn(correctOutgoingItemDto);
-        when(itemMapper.dtoToItem(any(ItemDto.class)))
-                .thenReturn(item);
         String jsonItem = objectMapper.writeValueAsString(correctIncomingItemDto);
         mockMvc.perform(patch("/items/1")
                         .header(USER_ID_HEADER, "1")
@@ -216,12 +200,10 @@ class ItemControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(item.getId()))
-                .andExpect(jsonPath("$.name").value(item.getName()))
-                .andExpect(jsonPath("$.description").value(item.getDescription()))
-                .andExpect(jsonPath("$.available").value(item.getAvailable()));
-        verify(itemService, times(1)).updateItem(any(Item.class));
-        verify(itemMapper, times(1)).itemToDto(eq(item.getOwner().getId()), any(Item.class));
-        verify(itemMapper, times(1)).dtoToItem(any(ItemDto.class));
+                .andExpect(jsonPath("$.name").value(correctIncomingItemDto.getName()))
+                .andExpect(jsonPath("$.description").value(correctIncomingItemDto.getDescription()))
+                .andExpect(jsonPath("$.available").value(correctIncomingItemDto.getAvailable()));
+        verify(itemService, times(1)).updateItem(anyLong(), anyLong(), any(IncomingItemDto.class));
     }
 
     @Test
@@ -235,8 +217,6 @@ class ItemControllerTest {
     @Test
     void findAllByOwnerTest() throws Exception {
         when(itemService.getAllByOwner(anyLong()))
-                .thenReturn(itemsList);
-        when(itemMapper.listItemToListDto(anyList()))
                 .thenReturn(itemsListDto);
         mockMvc.perform(get("/items")
                         .header(USER_ID_HEADER, "1")
@@ -245,11 +225,10 @@ class ItemControllerTest {
                 .andExpect(jsonPath("$.[*]").exists())
                 .andExpect(jsonPath("$.[*]").isNotEmpty())
                 .andExpect(jsonPath("$.[*]").isArray())
-                .andExpect(jsonPath("$.size()").value(2))
-                .andExpect(jsonPath("$.[0].id").value(1L))
-                .andExpect(jsonPath("$.[1].id").value(2L));
+                .andExpect(jsonPath("$.size()").value(itemsListDto.size()))
+                .andExpect(jsonPath("$.[0]").value(itemsListDto.get(0)))
+                .andExpect(jsonPath("$.[1]").value(itemsListDto.get(1)));
         verify(itemService, times(1)).getAllByOwner(anyLong());
-        verify(itemMapper, times(1)).listItemToListDto(anyList());
     }
 
     @Test
@@ -257,32 +236,27 @@ class ItemControllerTest {
         mockMvc.perform(get("/items/1")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError());
-        verify(itemService, never()).getItemById(anyLong());
+        verify(itemService, never()).getItemById(anyLong(), anyLong());
     }
 
     @Test
     void shouldGetByItemIdTest() throws Exception {
-        when(itemService.getItemById(anyLong()))
-                .thenReturn(item);
-        when(itemMapper.itemToDto(eq(item.getOwner().getId()), any(Item.class)))
+        when(itemService.getItemById(anyLong(), anyLong()))
                 .thenReturn(correctOutgoingItemDto);
         mockMvc.perform(get("/items/1")
                         .header(USER_ID_HEADER, "1")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(item.getId()))
-                .andExpect(jsonPath("$.name").value(item.getName()))
-                .andExpect(jsonPath("$.description").value(item.getDescription()))
-                .andExpect(jsonPath("$.available").value(item.getAvailable()));
-        verify(itemService, times(1)).getItemById(anyLong());
-        verify(itemMapper, times(1)).itemToDto(eq(item.getOwner().getId()), any(Item.class));
+                .andExpect(jsonPath("$.name").value(correctOutgoingItemDto.getName()))
+                .andExpect(jsonPath("$.description").value(correctOutgoingItemDto.getDescription()))
+                .andExpect(jsonPath("$.available").value(correctOutgoingItemDto.getAvailable()));
+        verify(itemService, times(1)).getItemById(anyLong(), anyLong());
     }
 
     @Test
     void searchItemsTest() throws Exception {
         when(itemService.searchItems(anyString()))
-                .thenReturn(itemsList);
-        when(itemMapper.listItemToListDto(anyList()))
                 .thenReturn(itemsListDto);
         mockMvc.perform(get("/items/search?text=text")
                         .header(USER_ID_HEADER, "1")
@@ -291,11 +265,10 @@ class ItemControllerTest {
                 .andExpect(jsonPath("$.[*]").exists())
                 .andExpect(jsonPath("$.[*]").isNotEmpty())
                 .andExpect(jsonPath("$.[*]").isArray())
-                .andExpect(jsonPath("$.size()").value(2))
-                .andExpect(jsonPath("$.[0].id").value(1L))
-                .andExpect(jsonPath("$.[1].id").value(2L));
+                .andExpect(jsonPath("$.size()").value(itemsListDto.size()))
+                .andExpect(jsonPath("$.[0]").value(itemsListDto.get(0)))
+                .andExpect(jsonPath("$.[1]").value(itemsListDto.get(1)));
         verify(itemService, times(1)).searchItems(anyString());
-        verify(itemMapper, times(1)).listItemToListDto(anyList());
     }
 
     @Test
@@ -303,25 +276,21 @@ class ItemControllerTest {
         mockMvc.perform(post("/items/1/comment")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError());
-        verify(itemService, never()).createComment(any(Comment.class));
+        verify(itemService, never()).createComment(anyLong(), anyLong(), any(IncomingCommentDto.class));
     }
 
     @Test
     void createCommentTest() throws Exception {
-        when(itemService.createComment(any(Comment.class)))
-                .thenReturn(comment);
-        when(itemMapper.commentToDto(any(Comment.class)))
+        when(itemService.createComment(anyLong(), anyLong(), any(IncomingCommentDto.class)))
                 .thenReturn(outgoingCommentDto);
-        when(itemMapper.dtoToComment(any(IncomingCommentDto.class)))
-                .thenReturn(comment);
         String jsonComment = objectMapper.writeValueAsString(comment);
         mockMvc.perform(post("/items/1/comment")
                         .header(USER_ID_HEADER, "1")
                         .content(jsonComment)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-        verify(itemService, times(1)).createComment(any(Comment.class));
-        verify(itemMapper, times(1)).commentToDto(any(Comment.class));
-        verify(itemMapper, times(1)).dtoToComment(any(IncomingCommentDto.class));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.text").value(outgoingCommentDto.getText()));
+        verify(itemService, times(1)).createComment(anyLong(), anyLong(),
+                any(IncomingCommentDto.class));
     }
 }

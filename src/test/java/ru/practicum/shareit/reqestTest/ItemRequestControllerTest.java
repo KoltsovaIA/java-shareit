@@ -12,12 +12,12 @@ import ru.practicum.shareit.item.dto.ShortItemDto;
 import ru.practicum.shareit.request.ItemRequestController;
 import ru.practicum.shareit.request.dto.IncomingItemRequestDto;
 import ru.practicum.shareit.request.dto.OutgoingItemRequestDto;
-import ru.practicum.shareit.request.dto.RequestMapper;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.service.ItemRequestService;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,15 +41,13 @@ class ItemRequestControllerTest {
     @MockBean
     private ItemRequestService requestService;
 
-    @MockBean
-    private RequestMapper requestMapper;
     private static ItemRequest request;
     private static IncomingItemRequestDto incomingItemRequestDto;
     private static OutgoingItemRequestDto outgoingItemRequestDto;
     private static ItemRequest requestWithBlankDescription;
     private static ItemRequest requestWithDescriptionSize555;
-    private static List<ItemRequest> requestsList;
     private static List<OutgoingItemRequestDto> requestsListDto;
+    public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
     @BeforeAll
     static void beforeAll() {
@@ -64,6 +62,8 @@ class ItemRequestControllerTest {
         List<ShortItemDto> items = new ArrayList<>();
         items.add(shortItemDto);
 
+        LocalDateTime nowTime = LocalDateTime.parse(LocalDateTime.now().format(DATE_TIME_FORMATTER));
+
         User requester = User.builder().id(1L)
                 .name("user")
                 .email("user@mail.ru")
@@ -72,7 +72,7 @@ class ItemRequestControllerTest {
         request = ItemRequest.builder()
                 .id(1L)
                 .description("description")
-                .created(LocalDateTime.now())
+                .created(nowTime)
                 .requester(requester)
                 .build();
 
@@ -80,9 +80,9 @@ class ItemRequestControllerTest {
                 .description("description")
                 .build();
         outgoingItemRequestDto = OutgoingItemRequestDto.builder()
-                .id(1L)
-                .description("description")
-                .created(LocalDateTime.now())
+                .id(request.getId())
+                .description(request.getDescription())
+                .created(request.getCreated())
                 .items(items)
                 .build();
 
@@ -100,116 +100,84 @@ class ItemRequestControllerTest {
                 .requester(requester)
                 .build();
 
-        requestsList = new ArrayList<>();
-        requestsList.add(request);
         requestsListDto = new ArrayList<>();
         requestsListDto.add(outgoingItemRequestDto);
     }
 
     @Test
     void createItemRequestWithoutHeaderTest() throws Exception {
-        when(requestService.createItemRequest(any(ItemRequest.class)))
-                .thenReturn(request);
-        when(requestMapper.itemRequestToOutgoingItemRequestDto(any(ItemRequest.class)))
+        when(requestService.createItemRequest(anyLong(), any(IncomingItemRequestDto.class)))
                 .thenReturn(outgoingItemRequestDto);
-        when(requestMapper.incomingItemRequestDtoToItemRequest(anyLong(), any(IncomingItemRequestDto.class)))
-                .thenReturn(request);
         String jsonRequest = objectMapper.writeValueAsString(request);
         mockMvc.perform(post("/requests")
                         .content(jsonRequest)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError());
-        verify(requestService, never()).createItemRequest(any(ItemRequest.class));
-        verify(requestMapper, never()).itemRequestToOutgoingItemRequestDto(any(ItemRequest.class));
-        verify(requestMapper, never()).incomingItemRequestDtoToItemRequest(anyLong(),
-                any(IncomingItemRequestDto.class));
+        verify(requestService, never()).createItemRequest(anyLong(), any(IncomingItemRequestDto.class));
     }
 
     @Test
     void createItemRequestWithBlankDescriptionTest() throws Exception {
-        when(requestService.createItemRequest(any(ItemRequest.class)))
-                .thenReturn(request);
-        when(requestMapper.itemRequestToOutgoingItemRequestDto(any(ItemRequest.class)))
+        when(requestService.createItemRequest(anyLong(), any(IncomingItemRequestDto.class)))
                 .thenReturn(outgoingItemRequestDto);
-        when(requestMapper.incomingItemRequestDtoToItemRequest(anyLong(), any(IncomingItemRequestDto.class)))
-                .thenReturn(request);
         String jsonRequest = objectMapper.writeValueAsString(requestWithBlankDescription);
         mockMvc.perform(post("/requests")
                         .header(USER_ID_HEADER, "1")
                         .content(jsonRequest)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
-        verify(requestService, never()).createItemRequest(any(ItemRequest.class));
-        verify(requestMapper, never()).itemRequestToOutgoingItemRequestDto(any(ItemRequest.class));
-        verify(requestMapper, never()).incomingItemRequestDtoToItemRequest(anyLong(),
-                any(IncomingItemRequestDto.class));
+        verify(requestService, never()).createItemRequest(anyLong(), any(IncomingItemRequestDto.class));
     }
 
     @Test
     void createItemRequestWithDescriptionSize555Test() throws Exception {
-        when(requestService.createItemRequest(any(ItemRequest.class)))
-                .thenReturn(request);
-        when(requestMapper.itemRequestToOutgoingItemRequestDto(any(ItemRequest.class)))
+        when(requestService.createItemRequest(anyLong(), any(IncomingItemRequestDto.class)))
                 .thenReturn(outgoingItemRequestDto);
-        when(requestMapper.incomingItemRequestDtoToItemRequest(anyLong(), any(IncomingItemRequestDto.class)))
-                .thenReturn(request);
         String jsonRequest = objectMapper.writeValueAsString(requestWithDescriptionSize555);
         mockMvc.perform(post("/requests")
                         .header(USER_ID_HEADER, "1")
                         .content(jsonRequest)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
-        verify(requestService, never()).createItemRequest(any(ItemRequest.class));
-        verify(requestMapper, never()).itemRequestToOutgoingItemRequestDto(any(ItemRequest.class));
-        verify(requestMapper, never()).incomingItemRequestDtoToItemRequest(anyLong(),
-                any(IncomingItemRequestDto.class));
+        verify(requestService, never()).createItemRequest(anyLong(), any(IncomingItemRequestDto.class));
     }
 
     @Test
     void createItemRequestTest() throws Exception {
-        when(requestService.createItemRequest(any(ItemRequest.class)))
-                .thenReturn(request);
-        when(requestMapper.itemRequestToOutgoingItemRequestDto(any(ItemRequest.class)))
+        when(requestService.createItemRequest(anyLong(), any(IncomingItemRequestDto.class)))
                 .thenReturn(outgoingItemRequestDto);
-        when(requestMapper.incomingItemRequestDtoToItemRequest(anyLong(), any(IncomingItemRequestDto.class)))
-                .thenReturn(request);
         String jsonRequest = objectMapper.writeValueAsString(incomingItemRequestDto);
         mockMvc.perform(post("/requests")
                         .header(USER_ID_HEADER, "1")
                         .content(jsonRequest)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(request.getId()))
-                .andExpect(jsonPath("$.description").value(request.getDescription()));
-        verify(requestService, times(1)).createItemRequest(any(ItemRequest.class));
-        verify(requestMapper, times(1))
-                .itemRequestToOutgoingItemRequestDto(any(ItemRequest.class));
-        verify(requestMapper, times(1)).incomingItemRequestDtoToItemRequest(anyLong(),
+                .andExpect(jsonPath("$.id").value(outgoingItemRequestDto.getId()))
+                .andExpect(jsonPath("$.description").value(outgoingItemRequestDto.getDescription()))
+                .andExpect(jsonPath("$.created").value(outgoingItemRequestDto.getCreated()
+                        .format(DATE_TIME_FORMATTER)))
+                .andExpect(jsonPath("$.items.[*]").exists())
+                .andExpect(jsonPath("$.items.[*]").isNotEmpty())
+                .andExpect(jsonPath("$.items.[*]").isArray())
+                .andExpect(jsonPath("$.items.size()").value(outgoingItemRequestDto.getItems().size()))
+                .andExpect(jsonPath("$.items[0]").value(outgoingItemRequestDto.getItems().get(0)));
+        verify(requestService, times(1)).createItemRequest(anyLong(),
                 any(IncomingItemRequestDto.class));
     }
 
     @Test
     void findOwnItemRequestsWithRequestWithoutHeaderTest() throws Exception {
         when(requestService.getAllItemRequestByRequester(anyLong()))
-                .thenReturn(requestsList);
-        when(requestMapper.itemRequestToOutgoingItemRequestDto(any(ItemRequest.class)))
-                .thenReturn(outgoingItemRequestDto);
-        when(requestMapper.incomingItemRequestDtoToItemRequest(anyLong(), any(IncomingItemRequestDto.class)))
-                .thenReturn(request);
+                .thenReturn(requestsListDto);
         mockMvc.perform(get("/requests")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError());
         verify(requestService, never()).getAllItemRequestByRequester(anyLong());
-        verify(requestMapper, never()).itemRequestToOutgoingItemRequestDto(any(ItemRequest.class));
-        verify(requestMapper, never()).incomingItemRequestDtoToItemRequest(anyLong(),
-                any(IncomingItemRequestDto.class));
     }
 
     @Test
     void findOwnItemRequestsTest() throws Exception {
         when(requestService.getAllItemRequestByRequester(anyLong()))
-                .thenReturn(requestsList);
-        when(requestMapper.listRequestToListDto(requestsList))
                 .thenReturn(requestsListDto);
         mockMvc.perform(get("/requests")
                         .header(USER_ID_HEADER, "1")
@@ -218,30 +186,28 @@ class ItemRequestControllerTest {
                 .andExpect(jsonPath("$.[*]").exists())
                 .andExpect(jsonPath("$.[*]").isNotEmpty())
                 .andExpect(jsonPath("$.[*]").isArray())
-                .andExpect(jsonPath("$.size()").value(1))
-                .andExpect(jsonPath("$.[0].id").value(1L));
+                .andExpect(jsonPath("$.size()").value(requestsListDto.size()))
+                .andExpect(jsonPath("$.[0].id").value(requestsListDto.get(0).getId()))
+                .andExpect(jsonPath("$.[0].description").value(requestsListDto.get(0).getDescription()))
+                .andExpect(jsonPath("$.[0].created").value(requestsListDto.get(0).getCreated()
+                                .format(DATE_TIME_FORMATTER)))
+                .andExpect(jsonPath("$.[0].items[0]").value(requestsListDto.get(0).getItems().get(0)));
         verify(requestService, times(1)).getAllItemRequestByRequester(anyLong());
-        verify(requestMapper, times(1)).listRequestToListDto(anyList());
     }
 
     @Test
     void findAllItemRequestsWithoutHeaderTest() throws Exception {
         when(requestService.getAllItemRequest(anyLong(), anyShort(), anyShort()))
-                .thenReturn(requestsList);
-        when(requestMapper.listRequestToListDto(requestsList))
                 .thenReturn(requestsListDto);
         mockMvc.perform(get("/requests/all")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError());
         verify(requestService, never()).getAllItemRequest(anyLong(), anyShort(), anyShort());
-        verify(requestMapper, never()).listRequestToListDto(anyList());
     }
 
     @Test
     void findAllItemRequestsTest() throws Exception {
         when(requestService.getAllItemRequest(anyLong(), anyShort(), anyShort()))
-                .thenReturn(requestsList);
-        when(requestMapper.listRequestToListDto(requestsList))
                 .thenReturn(requestsListDto);
         mockMvc.perform(get("/requests/all")
                         .header(USER_ID_HEADER, "1")
@@ -253,40 +219,35 @@ class ItemRequestControllerTest {
                 .andExpect(jsonPath("$.size()").value(1))
                 .andExpect(jsonPath("$.[0].id").value(1L));
         verify(requestService, times(1)).getAllItemRequest(anyLong(), anyShort(), anyShort());
-        verify(requestMapper, times(1)).listRequestToListDto(anyList());
     }
 
     @Test
     void findItemRequestsByIdWithRequestWithoutHeaderTest() throws Exception {
         when(requestService.findItemRequestsById(anyLong(), anyLong()))
-                .thenReturn(request);
-        when(requestMapper.itemRequestToOutgoingItemRequestDto(any(ItemRequest.class)))
                 .thenReturn(outgoingItemRequestDto);
-        when(requestMapper.incomingItemRequestDtoToItemRequest(anyLong(), any(IncomingItemRequestDto.class)))
-                .thenReturn(request);
         mockMvc.perform(get("/requests/1")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError());
         verify(requestService, never()).findItemRequestsById(anyLong(), anyLong());
-        verify(requestMapper, never()).itemRequestToOutgoingItemRequestDto(any(ItemRequest.class));
-        verify(requestMapper, never()).incomingItemRequestDtoToItemRequest(anyLong(),
-                any(IncomingItemRequestDto.class));
     }
 
     @Test
     void findItemRequestsByIdTest() throws Exception {
         when(requestService.findItemRequestsById(anyLong(), anyLong()))
-                .thenReturn(request);
-        when(requestMapper.itemRequestToOutgoingItemRequestDto(any(ItemRequest.class)))
                 .thenReturn(outgoingItemRequestDto);
         mockMvc.perform(get("/requests/1")
                         .header(USER_ID_HEADER, "1")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(request.getId()))
-                .andExpect(jsonPath("$.description").value(request.getDescription()));
+                .andExpect(jsonPath("$.id").value(outgoingItemRequestDto.getId()))
+                .andExpect(jsonPath("$.description").value(outgoingItemRequestDto.getDescription()))
+                .andExpect(jsonPath("$.created").value(outgoingItemRequestDto.getCreated()
+                        .format(DATE_TIME_FORMATTER)))
+                .andExpect(jsonPath("$.items.[*]").exists())
+                .andExpect(jsonPath("$.items.[*]").isNotEmpty())
+                .andExpect(jsonPath("$.items.[*]").isArray())
+                .andExpect(jsonPath("$.items.size()").value(outgoingItemRequestDto.getItems().size()))
+                .andExpect(jsonPath("$.items[0]").value(outgoingItemRequestDto.getItems().get(0)));
         verify(requestService, times(1)).findItemRequestsById(anyLong(), anyLong());
-        verify(requestMapper, times(1))
-                .itemRequestToOutgoingItemRequestDto(any(ItemRequest.class));
     }
 }

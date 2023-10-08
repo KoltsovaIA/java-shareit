@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.request.dto.IncomingItemRequestDto;
+import ru.practicum.shareit.request.dto.OutgoingItemRequestDto;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.service.ItemRequestService;
 import ru.practicum.shareit.user.model.User;
@@ -35,6 +37,7 @@ class ItemRequestIntegrationTest {
     private static User user;
     private static User user2;
     private static ItemRequest itemRequest;
+    private static IncomingItemRequestDto incomingItemRequestDto;
 
     @BeforeAll
     static void beforeAll() {
@@ -50,6 +53,10 @@ class ItemRequestIntegrationTest {
                 .email("mail2@ya.ru")
                 .build();
 
+        incomingItemRequestDto = IncomingItemRequestDto.builder()
+                .description("description")
+                .build();
+
         itemRequest = ItemRequest.builder()
                 .id(1L)
                 .description("description")
@@ -61,7 +68,7 @@ class ItemRequestIntegrationTest {
     @Test
     void createItemRequestTest() {
         userRepository.save(user);
-        requestService.createItemRequest(itemRequest);
+        requestService.createItemRequest(user.getId(), incomingItemRequestDto);
         TypedQuery<ItemRequest> query = entityManager
                 .createQuery("select r from ItemRequest r where r.id = :id", ItemRequest.class);
         ItemRequest requestFromDb = query.setParameter("id", 1L).getSingleResult();
@@ -75,8 +82,8 @@ class ItemRequestIntegrationTest {
     @Test
     void findItemRequestsByIdTest() {
         userRepository.save(user);
-        requestService.createItemRequest(itemRequest);
-        ItemRequest requestById = requestService.findItemRequestsById(user.getId(), 1L);
+        requestService.createItemRequest(user.getId(), incomingItemRequestDto);
+        OutgoingItemRequestDto requestById = requestService.findItemRequestsById(user.getId(), itemRequest.getId());
         assertThat(requestById.getDescription(), equalTo(itemRequest.getDescription()));
     }
 
@@ -84,8 +91,8 @@ class ItemRequestIntegrationTest {
     void getAllItemRequestTest() {
         userRepository.save(user);
         userRepository.save(user2);
-        requestService.createItemRequest(itemRequest);
-        List<ItemRequest> requests = requestService.getAllItemRequest(user2.getId(), (short) 0, (short) 5);
+        requestService.createItemRequest(user.getId(), incomingItemRequestDto);
+        List<OutgoingItemRequestDto> requests = requestService.getAllItemRequest(user2.getId(), (short) 0, (short) 5);
         Assertions.assertThat(requests)
                 .isNotEmpty()
                 .hasSize(1)

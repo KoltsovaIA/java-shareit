@@ -128,7 +128,7 @@ class BookingControllerTest {
         mockMvc.perform(post("/bookings")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError());
-        verify(bookingService, never()).createBooking(any(Booking.class));
+        verify(bookingService, never()).createBooking(anyLong(), any(IncomingBookingDto.class));
     }
 
     @Test
@@ -139,7 +139,7 @@ class BookingControllerTest {
                         .content(jsonBooking)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
-        verify(bookingService, never()).createBooking(any(Booking.class));
+        verify(bookingService, never()).createBooking(anyLong(), any(IncomingBookingDto.class));
     }
 
     @Test
@@ -150,17 +150,13 @@ class BookingControllerTest {
                         .content(jsonBooking)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
-        verify(bookingService, never()).createBooking(any(Booking.class));
+        verify(bookingService, never()).createBooking(anyLong(), any(IncomingBookingDto.class));
     }
 
     @Test
     void createBookingTest() throws Exception {
-        when(bookingService.createBooking(any(Booking.class)))
-                .thenReturn(booking);
-        when(bookingMapper.bookingToDto(any(Booking.class)))
+        when(bookingService.createBooking(anyLong(), any(IncomingBookingDto.class)))
                 .thenReturn(outgoingBookingDto);
-        when(bookingMapper.dtoToBooking(anyLong(), any(IncomingBookingDto.class)))
-                .thenReturn(booking);
         String jsonBooking = objectMapper.writeValueAsString(incomingBookingDto);
         mockMvc.perform(post("/bookings")
                         .header(USER_ID_HEADER, booker.getId())
@@ -169,16 +165,14 @@ class BookingControllerTest {
                         .accept(MediaType.ALL_VALUE)
                         .content(jsonBooking))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(booking.getId()))
-                .andExpect(jsonPath("$.start").value(booking.getStart().format(DATE_TIME_FORMATTER)))
-                .andExpect(jsonPath("$.end").value(booking.getEnd().format(DATE_TIME_FORMATTER)))
-                .andExpect(jsonPath("$.status").value(booking.getApproved().toString()))
-                .andExpect(jsonPath("$.booker.id").value(booking.getBooker().getId()))
-                .andExpect(jsonPath("$.item.id").value(booking.getItem().getId()))
-                .andExpect(jsonPath("$.item.name").value(booking.getItem().getName()));
-        verify(bookingService, times(1)).createBooking(booking);
-        verify(bookingMapper, times(1)).bookingToDto(any(Booking.class));
-        verify(bookingMapper, times(1)).dtoToBooking(anyLong(), any(IncomingBookingDto.class));
+                .andExpect(jsonPath("$.id").value(outgoingBookingDto.getId()))
+                .andExpect(jsonPath("$.start").value(outgoingBookingDto.getStart().format(DATE_TIME_FORMATTER)))
+                .andExpect(jsonPath("$.end").value(outgoingBookingDto.getEnd().format(DATE_TIME_FORMATTER)))
+                .andExpect(jsonPath("$.status").value(outgoingBookingDto.getStatus().toString()))
+                .andExpect(jsonPath("$.booker.id").value(outgoingBookingDto.getBooker().getId()))
+                .andExpect(jsonPath("$.item.id").value(outgoingBookingDto.getItem().getId()))
+                .andExpect(jsonPath("$.item.name").value(outgoingBookingDto.getItem().getName()));
+        verify(bookingService, times(1)).createBooking(anyLong(), any(IncomingBookingDto.class));
     }
 
     @Test
@@ -203,8 +197,6 @@ class BookingControllerTest {
     @Test
     void considerationOfBookingTest() throws Exception {
         when(bookingService.considerationOfBooking(anyLong(), anyLong(), anyBoolean()))
-                .thenReturn(booking);
-        when(bookingMapper.bookingToDto(any(Booking.class)))
                 .thenReturn(outgoingBookingDto);
         mockMvc.perform(patch("/bookings/1?approved=true")
                         .header(USER_ID_HEADER, booker.getId())
@@ -212,23 +204,20 @@ class BookingControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.ALL_VALUE))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(booking.getId()))
-                .andExpect(jsonPath("$.start").value(booking.getStart().format(DATE_TIME_FORMATTER)))
-                .andExpect(jsonPath("$.end").value(booking.getEnd().format(DATE_TIME_FORMATTER)))
-                .andExpect(jsonPath("$.status").value(booking.getApproved().toString()))
-                .andExpect(jsonPath("$.booker.id").value(booking.getBooker().getId()))
-                .andExpect(jsonPath("$.item.id").value(booking.getItem().getId()))
-                .andExpect(jsonPath("$.item.name").value(booking.getItem().getName()));
+                .andExpect(jsonPath("$.id").value(outgoingBookingDto.getId()))
+                .andExpect(jsonPath("$.start").value(outgoingBookingDto.getStart().format(DATE_TIME_FORMATTER)))
+                .andExpect(jsonPath("$.end").value(outgoingBookingDto.getEnd().format(DATE_TIME_FORMATTER)))
+                .andExpect(jsonPath("$.status").value(outgoingBookingDto.getStatus().toString()))
+                .andExpect(jsonPath("$.booker.id").value(outgoingBookingDto.getBooker().getId()))
+                .andExpect(jsonPath("$.item.id").value(outgoingBookingDto.getItem().getId()))
+                .andExpect(jsonPath("$.item.name").value(outgoingBookingDto.getItem().getName()));
         verify(bookingService, times(1))
                 .considerationOfBooking(anyLong(), anyLong(), anyBoolean());
-        verify(bookingMapper, times(1)).bookingToDto(any(Booking.class));
     }
 
     @Test
     void shouldRejectBookingTest() throws Exception {
         when(bookingService.considerationOfBooking(anyLong(), anyLong(), anyBoolean()))
-                .thenReturn(booking);
-        when(bookingMapper.bookingToDto(any(Booking.class)))
                 .thenReturn(outgoingBookingDto);
         mockMvc.perform(patch("/bookings/1?approved=false")
                         .header(USER_ID_HEADER, booker.getId())
@@ -236,23 +225,20 @@ class BookingControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.ALL_VALUE))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(booking.getId()))
-                .andExpect(jsonPath("$.start").value(booking.getStart().format(DATE_TIME_FORMATTER)))
-                .andExpect(jsonPath("$.end").value(booking.getEnd().format(DATE_TIME_FORMATTER)))
-                .andExpect(jsonPath("$.status").value(booking.getApproved().toString()))
-                .andExpect(jsonPath("$.booker.id").value(booking.getBooker().getId()))
-                .andExpect(jsonPath("$.item.id").value(booking.getItem().getId()))
-                .andExpect(jsonPath("$.item.name").value(booking.getItem().getName()));
+                .andExpect(jsonPath("$.id").value(outgoingBookingDto.getId()))
+                .andExpect(jsonPath("$.start").value(outgoingBookingDto.getStart().format(DATE_TIME_FORMATTER)))
+                .andExpect(jsonPath("$.end").value(outgoingBookingDto.getEnd().format(DATE_TIME_FORMATTER)))
+                .andExpect(jsonPath("$.status").value(outgoingBookingDto.getStatus().toString()))
+                .andExpect(jsonPath("$.booker.id").value(outgoingBookingDto.getBooker().getId()))
+                .andExpect(jsonPath("$.item.id").value(outgoingBookingDto.getItem().getId()))
+                .andExpect(jsonPath("$.item.name").value(outgoingBookingDto.getItem().getName()));
         verify(bookingService, times(1))
                 .considerationOfBooking(anyLong(), anyLong(), anyBoolean());
-        verify(bookingMapper, times(1)).bookingToDto(any(Booking.class));
     }
 
     @Test
     void getAllBookingByOwnerIdTest() throws Exception {
         when(bookingService.getAllBookingByOwnerId(anyLong(), eq("ALL"), any(Short.class), any(Short.class)))
-                .thenReturn(bookingList);
-        when(bookingMapper.listBookingToListDto(anyList()))
                 .thenReturn(bookingDtoList);
         mockMvc.perform(get("/bookings/owner")
                         .header(USER_ID_HEADER, booker.getId())
@@ -267,7 +253,6 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.[0].id").value(1L));
         verify(bookingService, times(1))
                 .getAllBookingByOwnerId(anyLong(), eq("ALL"), any(Short.class), any(Short.class));
-        verify(bookingMapper, times(1)).listBookingToListDto(anyList());
     }
 
     @Test
@@ -282,8 +267,6 @@ class BookingControllerTest {
     @Test
     void shouldGetBookingWithGetUserBookings() throws Exception {
         when(bookingService.getAllBookingByUserId(anyLong(), eq("ALL"), any(Short.class), any(Short.class)))
-                .thenReturn(bookingList);
-        when(bookingMapper.listBookingToListDto(anyList()))
                 .thenReturn(bookingDtoList);
         mockMvc.perform(get("/bookings")
                         .header(USER_ID_HEADER, booking.getId())
@@ -296,14 +279,11 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.[0].id").value(1L));
         verify(bookingService, times(1))
                 .getAllBookingByUserId(anyLong(), eq("ALL"), any(Short.class), any(Short.class));
-        verify(bookingMapper, times(1)).listBookingToListDto(anyList());
     }
 
     @Test
     void getAllBookingByUserIdWithStateALLText() throws Exception {
         when(bookingService.getAllBookingByUserId(anyLong(), eq("ALL"), any(Short.class), any(Short.class)))
-                .thenReturn(bookingList);
-        when(bookingMapper.listBookingToListDto(anyList()))
                 .thenReturn(bookingDtoList);
         mockMvc.perform(get("/bookings?state=ALL")
                         .header(USER_ID_HEADER, booker.getId())
@@ -316,14 +296,11 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.[0].id").value(1L));
         verify(bookingService, times(1))
                 .getAllBookingByUserId(anyLong(), eq("ALL"), any(Short.class), any(Short.class));
-        verify(bookingMapper, times(1)).listBookingToListDto(anyList());
     }
 
     @Test
     void getAllBookingByUserIdWithStateCURRENTTest() throws Exception {
         when(bookingService.getAllBookingByUserId(anyLong(), eq("CURRENT"), any(Short.class), any(Short.class)))
-                .thenReturn(bookingList);
-        when(bookingMapper.listBookingToListDto(anyList()))
                 .thenReturn(bookingDtoList);
         mockMvc.perform(get("/bookings?state=CURRENT")
                         .header(USER_ID_HEADER, booker.getId())
@@ -336,14 +313,11 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.[0].id").value(1L));
         verify(bookingService, times(1))
                 .getAllBookingByUserId(anyLong(), eq("CURRENT"), any(Short.class), any(Short.class));
-        verify(bookingMapper, times(1)).listBookingToListDto(anyList());
     }
 
     @Test
     void getAllBookingByUserIdWithStatePASTTest() throws Exception {
         when(bookingService.getAllBookingByUserId(anyLong(), eq("PAST"), any(Short.class), any(Short.class)))
-                .thenReturn(bookingList);
-        when(bookingMapper.listBookingToListDto(anyList()))
                 .thenReturn(bookingDtoList);
         mockMvc.perform(get("/bookings?state=PAST")
                         .header(USER_ID_HEADER, booker.getId())
@@ -356,14 +330,11 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.[0].id").value(1L));
         verify(bookingService, times(1))
                 .getAllBookingByUserId(anyLong(), eq("PAST"), any(Short.class), any(Short.class));
-        verify(bookingMapper, times(1)).listBookingToListDto(anyList());
     }
 
     @Test
     void getAllBookingByUserIdWithStateFUTURETest() throws Exception {
         when(bookingService.getAllBookingByUserId(anyLong(), eq("FUTURE"), any(Short.class), any(Short.class)))
-                .thenReturn(bookingList);
-        when(bookingMapper.listBookingToListDto(anyList()))
                 .thenReturn(bookingDtoList);
         mockMvc.perform(get("/bookings?state=FUTURE")
                         .header(USER_ID_HEADER, booker.getId())
@@ -376,14 +347,11 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.[0].id").value(1L));
         verify(bookingService, times(1))
                 .getAllBookingByUserId(anyLong(), eq("FUTURE"), any(Short.class), any(Short.class));
-        verify(bookingMapper, times(1)).listBookingToListDto(anyList());
     }
 
     @Test
     void getAllBookingByUserIdWithStateWAITINGTest() throws Exception {
         when(bookingService.getAllBookingByUserId(anyLong(), eq("WAITING"), any(Short.class), any(Short.class)))
-                .thenReturn(bookingList);
-        when(bookingMapper.listBookingToListDto(anyList()))
                 .thenReturn(bookingDtoList);
         mockMvc.perform(get("/bookings?state=WAITING")
                         .header(USER_ID_HEADER, booker.getId())
@@ -396,14 +364,11 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.[0].id").value(1L));
         verify(bookingService, times(1))
                 .getAllBookingByUserId(anyLong(), eq("WAITING"), any(Short.class), any(Short.class));
-        verify(bookingMapper, times(1)).listBookingToListDto(anyList());
     }
 
     @Test
     void getAllBookingByUserIdWithStateREJECTEDTest() throws Exception {
         when(bookingService.getAllBookingByUserId(anyLong(), eq("REJECTED"), any(Short.class), any(Short.class)))
-                .thenReturn(bookingList);
-        when(bookingMapper.listBookingToListDto(anyList()))
                 .thenReturn(bookingDtoList);
         mockMvc.perform(get("/bookings?state=REJECTED")
                         .header(USER_ID_HEADER, booker.getId())
@@ -416,7 +381,6 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.[0].id").value(1L));
         verify(bookingService, times(1))
                 .getAllBookingByUserId(anyLong(), eq("REJECTED"), any(Short.class), any(Short.class));
-        verify(bookingMapper, times(1)).listBookingToListDto(anyList());
     }
 
     @Test
@@ -431,8 +395,6 @@ class BookingControllerTest {
     @Test
     void getAllBookingByOwnerIdBookingsTest() throws Exception {
         when(bookingService.getAllBookingByOwnerId(anyLong(), eq("ALL"), any(Short.class), any(Short.class)))
-                .thenReturn(bookingList);
-        when(bookingMapper.listBookingToListDto(anyList()))
                 .thenReturn(bookingDtoList);
         mockMvc.perform(get("/bookings/owner")
                         .header(USER_ID_HEADER, booker.getId())
@@ -445,14 +407,11 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.[0].id").value(1L));
         verify(bookingService, times(1))
                 .getAllBookingByOwnerId(anyLong(), eq("ALL"), any(Short.class), any(Short.class));
-        verify(bookingMapper, times(1)).listBookingToListDto(anyList());
     }
 
     @Test
     void getAllBookingByOwnerIdWithStateALLTest() throws Exception {
         when(bookingService.getAllBookingByOwnerId(anyLong(), eq("ALL"), any(Short.class), any(Short.class)))
-                .thenReturn(bookingList);
-        when(bookingMapper.listBookingToListDto(anyList()))
                 .thenReturn(bookingDtoList);
         mockMvc.perform(get("/bookings/owner?state=ALL")
                         .header(USER_ID_HEADER, booker.getId())
@@ -465,14 +424,11 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.[0].id").value(1L));
         verify(bookingService, times(1))
                 .getAllBookingByOwnerId(anyLong(), eq("ALL"), any(Short.class), any(Short.class));
-        verify(bookingMapper, times(1)).listBookingToListDto(anyList());
     }
 
     @Test
     void getAllBookingByOwnerIdWithStateCURRENTTest() throws Exception {
         when(bookingService.getAllBookingByOwnerId(anyLong(), eq("CURRENT"), any(Short.class), any(Short.class)))
-                .thenReturn(bookingList);
-        when(bookingMapper.listBookingToListDto(anyList()))
                 .thenReturn(bookingDtoList);
         mockMvc.perform(get("/bookings/owner?state=CURRENT")
                         .header(USER_ID_HEADER, booker.getId())
@@ -485,14 +441,11 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.[0].id").value(1L));
         verify(bookingService, times(1))
                 .getAllBookingByOwnerId(anyLong(), eq("CURRENT"), any(Short.class), any(Short.class));
-        verify(bookingMapper, times(1)).listBookingToListDto(anyList());
     }
 
     @Test
     void getAllBookingByOwnerIdWithStatePASTTest() throws Exception {
         when(bookingService.getAllBookingByOwnerId(anyLong(), eq("PAST"), any(Short.class), any(Short.class)))
-                .thenReturn(bookingList);
-        when(bookingMapper.listBookingToListDto(anyList()))
                 .thenReturn(bookingDtoList);
         mockMvc.perform(get("/bookings/owner?state=PAST")
                         .header(USER_ID_HEADER, booker.getId())
@@ -505,14 +458,11 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.[0].id").value(1L));
         verify(bookingService, times(1))
                 .getAllBookingByOwnerId(anyLong(), eq("PAST"), any(Short.class), any(Short.class));
-        verify(bookingMapper, times(1)).listBookingToListDto(anyList());
     }
 
     @Test
     void shouldGetBookingWithGetOwnerBookingsWithStateFUTURE() throws Exception {
         when(bookingService.getAllBookingByOwnerId(anyLong(), eq("FUTURE"), any(Short.class), any(Short.class)))
-                .thenReturn(bookingList);
-        when(bookingMapper.listBookingToListDto(anyList()))
                 .thenReturn(bookingDtoList);
         mockMvc.perform(get("/bookings/owner?state=FUTURE")
                         .header(USER_ID_HEADER, booker.getId())
@@ -525,14 +475,11 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.[0].id").value(1L));
         verify(bookingService, times(1))
                 .getAllBookingByOwnerId(anyLong(), eq("FUTURE"), any(Short.class), any(Short.class));
-        verify(bookingMapper, times(1)).listBookingToListDto(anyList());
     }
 
     @Test
     void shouldGetBookingWithGetOwnerBookingsWithStateWAITING() throws Exception {
         when(bookingService.getAllBookingByOwnerId(anyLong(), eq("WAITING"), any(Short.class), any(Short.class)))
-                .thenReturn(bookingList);
-        when(bookingMapper.listBookingToListDto(anyList()))
                 .thenReturn(bookingDtoList);
         mockMvc.perform(get("/bookings/owner?state=WAITING")
                         .header(USER_ID_HEADER, booker.getId())
@@ -545,14 +492,11 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.[0].id").value(1L));
         verify(bookingService, times(1))
                 .getAllBookingByOwnerId(anyLong(), eq("WAITING"), any(Short.class), any(Short.class));
-        verify(bookingMapper, times(1)).listBookingToListDto(anyList());
     }
 
     @Test
     void shouldGetBookingWithGetOwnerBookingsWithStateREJECTED() throws Exception {
         when(bookingService.getAllBookingByOwnerId(anyLong(), eq("REJECTED"), any(Short.class), any(Short.class)))
-                .thenReturn(bookingList);
-        when(bookingMapper.listBookingToListDto(anyList()))
                 .thenReturn(bookingDtoList);
         mockMvc.perform(get("/bookings/owner?state=REJECTED")
                         .header(USER_ID_HEADER, booker.getId())
@@ -565,7 +509,6 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.[0].id").value(1L));
         verify(bookingService, times(1))
                 .getAllBookingByOwnerId(anyLong(), eq("REJECTED"), any(Short.class), any(Short.class));
-        verify(bookingMapper, times(1)).listBookingToListDto(anyList());
     }
 
     @Test
@@ -579,8 +522,6 @@ class BookingControllerTest {
     @Test
     void getBookingByUserIdTest() throws Exception {
         when(bookingService.getBookingById(anyLong(), anyLong()))
-                .thenReturn(booking);
-        when(bookingMapper.bookingToDto(any(Booking.class)))
                 .thenReturn(outgoingBookingDto);
         mockMvc.perform(get("/bookings/1")
                         .header(USER_ID_HEADER, booker.getId())
@@ -588,14 +529,13 @@ class BookingControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.ALL_VALUE))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(booking.getId()))
-                .andExpect(jsonPath("$.start").value(booking.getStart().format(DATE_TIME_FORMATTER)))
-                .andExpect(jsonPath("$.end").value(booking.getEnd().format(DATE_TIME_FORMATTER)))
-                .andExpect(jsonPath("$.status").value(booking.getApproved().toString()))
-                .andExpect(jsonPath("$.booker.id").value(booking.getBooker().getId()))
-                .andExpect(jsonPath("$.item.id").value(booking.getItem().getId()))
-                .andExpect(jsonPath("$.item.name").value(booking.getItem().getName()));
+                .andExpect(jsonPath("$.id").value(outgoingBookingDto.getId()))
+                .andExpect(jsonPath("$.start").value(outgoingBookingDto.getStart().format(DATE_TIME_FORMATTER)))
+                .andExpect(jsonPath("$.end").value(outgoingBookingDto.getEnd().format(DATE_TIME_FORMATTER)))
+                .andExpect(jsonPath("$.status").value(outgoingBookingDto.getStatus().toString()))
+                .andExpect(jsonPath("$.booker.id").value(outgoingBookingDto.getBooker().getId()))
+                .andExpect(jsonPath("$.item.id").value(outgoingBookingDto.getItem().getId()))
+                .andExpect(jsonPath("$.item.name").value(outgoingBookingDto.getItem().getName()));
         verify(bookingService, times(1)).getBookingById(anyLong(), anyLong());
-        verify(bookingMapper, times(1)).bookingToDto(any(Booking.class));
     }
 }

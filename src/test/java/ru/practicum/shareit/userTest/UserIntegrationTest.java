@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
@@ -27,11 +28,11 @@ class UserIntegrationTest {
     private final UserService userService;
     private final EntityManager entityManager;
 
-    private static User user;
+    private static UserDto userDto;
 
     @BeforeAll
     static void beforeAll() {
-        user = User.builder()
+        userDto = UserDto.builder()
                 .name("name")
                 .email("email@ya.ru")
                 .build();
@@ -39,26 +40,27 @@ class UserIntegrationTest {
 
     @Test
     void createUserTest() {
-        userService.createUser(user);
+        userService.createUser(userDto);
         TypedQuery<User> query = entityManager.createQuery("select u from User u where u.id = :id", User.class);
         User userFromDb = query.setParameter("id", 1L).getSingleResult();
-        assertThat(user.getName(), equalTo(userFromDb.getName()));
-        assertThat(user.getEmail(), equalTo(userFromDb.getEmail()));
+        assertThat(userDto.getName(), equalTo(userFromDb.getName()));
+        assertThat(userDto.getEmail(), equalTo(userFromDb.getEmail()));
     }
 
     @Test
     void updateUserTest() {
-        userService.createUser(user);
-        user.setName("newName");
-        userService.updateUser(user);
+        userService.createUser(userDto);
+        userDto.setId(1L);
+        userDto.setName("newName");
+        userService.updateUser(userDto);
         TypedQuery<User> query = entityManager.createQuery("select u from User u where u.id = :id", User.class);
         User updatedUser = query.setParameter("id", 1L).getSingleResult();
-        assertThat(user.getName(), equalTo(updatedUser.getName()));
+        assertThat(userDto.getName(), equalTo(updatedUser.getName()));
     }
 
     @Test
     void deleteUserByIdTest() {
-        userService.createUser(user);
+        userService.createUser(userDto);
         assertThat(userService.findAllUsers().size(), equalTo(1));
         userService.deleteUserById(1L);
         assertThat(userService.findAllUsers().size(), equalTo(0));
@@ -66,21 +68,21 @@ class UserIntegrationTest {
 
     @Test
     void getUserById() {
-        userService.createUser(user);
+        userService.createUser(userDto);
         User userFromDb = userService.getUserById(1L);
-        assertThat(user.getName(), equalTo(userFromDb.getName()));
-        assertThat(user.getEmail(), equalTo(userFromDb.getEmail()));
+        assertThat(userDto.getName(), equalTo(userFromDb.getName()));
+        assertThat(userDto.getEmail(), equalTo(userFromDb.getEmail()));
     }
 
     @Test
     void shouldGetAll() {
-        User user2 = new User();
+        UserDto user2 = new UserDto();
         user2.setEmail("user2@mail.ru");
         user2.setName("user2");
-        User user3 = new User();
+        UserDto user3 = new UserDto();
         user3.setEmail("user3@mail.ru");
         user3.setName("user3");
-        userService.createUser(user);
+        userService.createUser(userDto);
         userService.createUser(user2);
         userService.createUser(user3);
         List<User> users = userService.findAllUsers();
@@ -89,7 +91,7 @@ class UserIntegrationTest {
                 .hasSize(3)
                 .satisfies(list -> {
                     assertThat(list.get(0)).hasFieldOrPropertyWithValue("id", 1L);
-                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("email", user.getEmail());
+                    assertThat(list.get(0)).hasFieldOrPropertyWithValue("email", userDto.getEmail());
                     assertThat(list.get(1)).hasFieldOrPropertyWithValue("id", 2L);
                     assertThat(list.get(1)).hasFieldOrPropertyWithValue("email", user2.getEmail());
                     assertThat(list.get(2)).hasFieldOrPropertyWithValue("id", 3L);

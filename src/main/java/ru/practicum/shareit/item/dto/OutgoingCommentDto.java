@@ -9,6 +9,8 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
+@EqualsAndHashCode
 public class OutgoingCommentDto {
     private Long id;
     private String text;

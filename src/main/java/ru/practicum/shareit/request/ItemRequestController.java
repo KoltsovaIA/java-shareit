@@ -5,7 +5,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.dto.IncomingItemRequestDto;
 import ru.practicum.shareit.request.dto.OutgoingItemRequestDto;
-import ru.practicum.shareit.request.dto.RequestMapper;
 import ru.practicum.shareit.request.service.ItemRequestService;
 
 import javax.validation.Valid;
@@ -21,19 +20,16 @@ import static ru.practicum.shareit.util.Constants.USER_ID_HEADER;
 @Validated
 public class ItemRequestController {
     private final ItemRequestService itemRequestService;
-    private final RequestMapper requestMapper;
 
     @PostMapping
     public OutgoingItemRequestDto createItemRequest(@Valid @RequestBody IncomingItemRequestDto dto,
                                                     @RequestHeader(USER_ID_HEADER) long userId) {
-        return requestMapper.itemRequestToOutgoingItemRequestDto(
-                itemRequestService.createItemRequest(requestMapper
-                        .incomingItemRequestDtoToItemRequest(userId, dto)));
+        return itemRequestService.createItemRequest(userId, dto);
     }
 
     @GetMapping
     public List<OutgoingItemRequestDto> findOwnItemRequests(@RequestHeader(USER_ID_HEADER) long userId) {
-        return requestMapper.listRequestToListDto(itemRequestService.getAllItemRequestByRequester(userId));
+        return itemRequestService.getAllItemRequestByRequester(userId);
     }
 
     @GetMapping("/all")
@@ -42,13 +38,12 @@ public class ItemRequestController {
                                                             @PositiveOrZero Short from,
                                                             @RequestParam(defaultValue = "32")
                                                             @Positive Short size) {
-        return requestMapper.listRequestToListDto(itemRequestService.getAllItemRequest(userId, from, size));
+        return itemRequestService.getAllItemRequest(userId, from, size);
     }
 
     @GetMapping("/{requestId}")
     public OutgoingItemRequestDto findItemRequestById(@RequestHeader(USER_ID_HEADER) long userId,
                                                       @PathVariable long requestId) {
-        return requestMapper.itemRequestToOutgoingItemRequestDto(itemRequestService
-                .findItemRequestsById(userId, requestId));
+        return itemRequestService.findItemRequestsById(userId, requestId);
     }
 }
