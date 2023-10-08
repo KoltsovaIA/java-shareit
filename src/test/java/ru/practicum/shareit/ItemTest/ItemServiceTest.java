@@ -53,7 +53,7 @@ class ItemServiceTest {
     void beforeAll() {
         itemRepository = Mockito.mock(ItemRepository.class);
         userService = Mockito.mock(UserService.class);
-        itemRequestRepository =Mockito.mock(ItemRequestRepository.class);
+        itemRequestRepository = Mockito.mock(ItemRequestRepository.class);
         commentRepository = Mockito.mock(CommentRepository.class);
         bookingRepository = Mockito.mock(BookingRepository.class);
         itemService = new ItemServiceImpl(itemRepository, userService, commentRepository, bookingRepository,

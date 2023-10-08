@@ -12,7 +12,7 @@ public class RequestMapper {
         throw new IllegalStateException("Utility class");
     }
 
-    public static OutgoingItemRequestDto itemRequestToOutgoingItemRequestDto(ItemRequest request, List<Item> items ) {
+    public static OutgoingItemRequestDto itemRequestToOutgoingItemRequestDto(ItemRequest request, List<Item> items) {
         List<ShortItemDto> shortItemsDto = new LinkedList<>();
         items.forEach(value -> shortItemsDto.add(itemToShortItemDto(value)));
         return OutgoingItemRequestDto.builder()

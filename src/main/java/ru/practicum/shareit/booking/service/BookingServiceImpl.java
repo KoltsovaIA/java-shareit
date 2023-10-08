@@ -59,7 +59,7 @@ public class BookingServiceImpl implements BookingService {
                 .end(bookingDto.getEnd())
                 .approved(BookingStatus.WAITING)
                 .build();
-        return BookingMapper.bookingToDto( bookingRepository.save(booking));
+        return BookingMapper.bookingToDto(bookingRepository.save(booking));
     }
 
     @Override

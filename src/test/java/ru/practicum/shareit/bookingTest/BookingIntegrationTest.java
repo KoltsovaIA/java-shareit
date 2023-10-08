@@ -14,7 +14,6 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.item.dto.IncomingItemDto;
-import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -46,7 +45,6 @@ class BookingIntegrationTest {
     private static IncomingItemDto itemDto;
     private static Item item;
     private static IncomingItemDto itemDto2;
-    private static Item item2;
     private static IncomingBookingDto bookingDto;
     private static IncomingBookingDto bookingDto1;
     private static Booking booking;
@@ -99,7 +97,7 @@ class BookingIntegrationTest {
                 .requestId(null)
                 .build();
 
-        item2 = Item.builder()
+        Item item2 = Item.builder()
                 .id(2L)
                 .name(itemDto2.getName())
                 .description(itemDto2.getDescription())

@@ -9,6 +9,7 @@ public class BookingMapper {
     private BookingMapper() {
         throw new IllegalStateException("Utility class");
     }
+
     public static OutgoingBookingDto bookingToDto(Booking booking) {
         return OutgoingBookingDto.builder()
                 .id(booking.getId())
