@@ -6,7 +6,7 @@ import org.mockito.Mockito;
 import org.springframework.data.domain.Pageable;
 import ru.practicum.shareit.item.exception.ItemNotFoundException;
 import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.requestDto.IncomingItemRequestDto;
+import ru.practicum.shareit.request.dto.IncomingItemRequestDto;
 import ru.practicum.shareit.request.dto.OutgoingItemRequestDto;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;

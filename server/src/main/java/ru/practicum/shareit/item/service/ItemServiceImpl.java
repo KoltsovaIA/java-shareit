@@ -13,8 +13,8 @@ import ru.practicum.shareit.item.exception.ItemNotFoundException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.itemDto.IncomingCommentDto;
-import ru.practicum.shareit.itemDto.IncomingItemDto;
+import ru.practicum.shareit.item.dto.IncomingCommentDto;
+import ru.practicum.shareit.item.dto.IncomingItemDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.OutgoingCommentDto;
 import ru.practicum.shareit.request.model.ItemRequest;
@@ -95,9 +95,6 @@ public class ItemServiceImpl implements ItemService {
         Item item = itemRepository.getReferenceById(id);
         Booking lastBooking = bookingRepository.findLastBooking(item.getId(), LocalDateTime.now());
         Booking nextBooking = bookingRepository.findNextBooking(item.getId(), LocalDateTime.now());
-        System.out.println(LocalDateTime.now());
-        System.out.println(ItemMapper.itemToDto(userId, item, lastBooking, nextBooking,
-                findAllCommentsByItemId(item.getId())).toString());
         return ItemMapper.itemToDto(userId, item, lastBooking, nextBooking,
                 findAllCommentsByItemId(item.getId()));
     }

@@ -1,4 +1,4 @@
-package ru.practicum.shareit.requestDto;
+package ru.practicum.shareit.request;
 
 import lombok.*;
 

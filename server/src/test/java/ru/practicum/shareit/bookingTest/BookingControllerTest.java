@@ -13,7 +13,7 @@ import ru.practicum.shareit.booking.dto.*;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.service.BookingService;
-import ru.practicum.shareit.bookingDto.IncomingBookingDto;
+import ru.practicum.shareit.booking.dto.IncomingBookingDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
@@ -49,10 +49,7 @@ class BookingControllerTest {
     private static ShortBookerDto booker;
     private static IncomingBookingDto incomingBookingDto;
     private static OutgoingBookingDto outgoingBookingDto;
-    private static IncomingBookingDto incomingBookingDtoWithoutStart;
-    private static IncomingBookingDto incomingBookingDtoWithoutEnd;
     private static Booking booking;
-    private static List<Booking> bookingList;
     private static List<OutgoingBookingDto> bookingDtoList;
     public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
@@ -101,16 +98,6 @@ class BookingControllerTest {
                 .status(BookingStatus.WAITING)
                 .build();
 
-        incomingBookingDtoWithoutStart = IncomingBookingDto.builder()
-                .itemId(1L)
-                .end(futureTwoMonth)
-                .build();
-
-        incomingBookingDtoWithoutEnd = IncomingBookingDto.builder()
-                .itemId(1L)
-                .start(futureOneMonth)
-                .build();
-
         booking = Booking.builder()
                 .id(1L)
                 .start(now)
@@ -120,7 +107,6 @@ class BookingControllerTest {
                 .approved(BookingStatus.WAITING)
                 .build();
 
-        bookingList = new ArrayList<>(List.of(booking));
         bookingDtoList = new ArrayList<>(List.of(outgoingBookingDto));
     }
 
@@ -129,28 +115,6 @@ class BookingControllerTest {
         mockMvc.perform(post("/bookings")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError());
-        verify(bookingService, never()).createBooking(anyLong(), any(IncomingBookingDto.class));
-    }
-
-    @Test
-    void createBookingWithoutStartTest() throws Exception {
-        String jsonBooking = objectMapper.writeValueAsString(incomingBookingDtoWithoutStart);
-        mockMvc.perform(post("/bookings")
-                        .header(USER_ID_HEADER, booker.getId())
-                        .content(jsonBooking)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-        verify(bookingService, never()).createBooking(anyLong(), any(IncomingBookingDto.class));
-    }
-
-    @Test
-    void createBookingWithoutEndTest() throws Exception {
-        String jsonBooking = objectMapper.writeValueAsString(incomingBookingDtoWithoutEnd);
-        mockMvc.perform(post("/bookings")
-                        .header(USER_ID_HEADER, booker.getId())
-                        .content(jsonBooking)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
         verify(bookingService, never()).createBooking(anyLong(), any(IncomingBookingDto.class));
     }
 

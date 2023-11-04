@@ -1,4 +1,4 @@
-package ru.practicum.shareit.userDto;
+package ru.practicum.shareit.user;
 
 import lombok.*;
 import ru.practicum.shareit.util.OnCreate;

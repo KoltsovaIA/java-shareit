@@ -9,8 +9,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.item.ItemController;
-import ru.practicum.shareit.itemDto.IncomingCommentDto;
-import ru.practicum.shareit.itemDto.IncomingItemDto;
+import ru.practicum.shareit.item.dto.IncomingCommentDto;
+import ru.practicum.shareit.item.dto.IncomingItemDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.OutgoingCommentDto;
 import ru.practicum.shareit.item.model.Comment;
@@ -45,9 +45,6 @@ class ItemControllerTest {
     private static ItemDto correctIncomingItemDto;
     private static ItemDto correctOutgoingItemDto;
     private static Item item;
-    private static ItemDto itemDtoWithNoName;
-    private static ItemDto itemDtoWithNoDescription;
-    private static ItemDto itemDtoWithNoAvailable;
     private static List<ItemDto> itemsListDto;
     private static Comment comment;
     private static OutgoingCommentDto outgoingCommentDto;
@@ -92,21 +89,6 @@ class ItemControllerTest {
                 .available(item2.getAvailable())
                 .build();
 
-        itemDtoWithNoName = ItemDto.builder()
-                .description("description")
-                .available(true)
-                .build();
-
-        itemDtoWithNoDescription = ItemDto.builder()
-                .name("name")
-                .available(true)
-                .build();
-
-        itemDtoWithNoAvailable = ItemDto.builder()
-                .name("name")
-                .description("description")
-                .build();
-
         itemsListDto = new ArrayList<>();
         itemsListDto.add(correctOutgoingItemDto);
         itemsListDto.add(correctOutgoingItemDto2);
@@ -128,39 +110,6 @@ class ItemControllerTest {
         mockMvc.perform(post("/items")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError());
-        verify(itemService, never()).createItem(anyLong(), any(IncomingItemDto.class));
-    }
-
-    @Test
-    void createItemWithoutNameTest() throws Exception {
-        String jsonItem = objectMapper.writeValueAsString(itemDtoWithNoName);
-        mockMvc.perform(post("/items")
-                        .header(USER_ID_HEADER, "1")
-                        .content(jsonItem)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-        verify(itemService, never()).createItem(anyLong(), any(IncomingItemDto.class));
-    }
-
-    @Test
-    void createItemWithoutDescriptionTest() throws Exception {
-        String jsonItem = objectMapper.writeValueAsString(itemDtoWithNoDescription);
-        mockMvc.perform(post("/items")
-                        .header(USER_ID_HEADER, "1")
-                        .content(jsonItem)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-        verify(itemService, never()).createItem(anyLong(), any(IncomingItemDto.class));
-    }
-
-    @Test
-    void createItemWithoutAvailableTest() throws Exception {
-        String jsonItem = objectMapper.writeValueAsString(itemDtoWithNoAvailable);
-        mockMvc.perform(post("/items")
-                        .header(USER_ID_HEADER, "1")
-                        .content(jsonItem)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
         verify(itemService, never()).createItem(anyLong(), any(IncomingItemDto.class));
     }
 

@@ -1,6 +1,6 @@
 package ru.practicum.shareit.booking.service;
 
-import ru.practicum.shareit.bookingDto.IncomingBookingDto;
+import ru.practicum.shareit.booking.dto.IncomingBookingDto;
 import ru.practicum.shareit.booking.dto.OutgoingBookingDto;
 import ru.practicum.shareit.booking.model.Booking;
 

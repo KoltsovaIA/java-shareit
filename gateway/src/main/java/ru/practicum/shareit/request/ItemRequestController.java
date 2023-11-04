@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.requestDto.IncomingItemRequestDto;
 import org.springframework.http.ResponseEntity;
 
 import javax.validation.Valid;

@@ -9,7 +9,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.user.UserController;
-import ru.practicum.shareit.userDto.UserDto;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
@@ -39,16 +39,10 @@ class UserControllerTest {
 
     private static UserDto correctIncomingUserDto;
     private static UserDto userDtoWithoutName;
-    private static UserDto userDtoWithBlankName;
     private static UserDto userDtoWithoutEmail;
-    private static UserDto userDtoWithWrongEmail;
-    private static UserDto userDtoWithWrongEmailNoDomainSecondLevel;
-    private static UserDto userDtoWithWrongEmailNoDomainFirstLevel;
-    private static UserDto userDtoWithWrongEmailNoAt;
     private static UserDto correctOutgoingUserDto;
     private static User correctUser;
     private static List<User> usersList;
-    private static List<UserDto> usersListDto;
 
     @BeforeAll
     static void beforeAll() {
@@ -61,33 +55,8 @@ class UserControllerTest {
                 .email("user@email.ru")
                 .build();
 
-        userDtoWithBlankName = UserDto.builder()
-                .name("")
-                .email("user@email.ru")
-                .build();
-
         userDtoWithoutEmail = UserDto.builder()
                 .name("user")
-                .build();
-
-        userDtoWithWrongEmail = UserDto.builder()
-                .name("user")
-                .email("@email.ru")
-                .build();
-
-        userDtoWithWrongEmailNoDomainSecondLevel = UserDto.builder()
-                .name("user")
-                .email("user@.ru")
-                .build();
-
-        userDtoWithWrongEmailNoDomainFirstLevel = UserDto.builder()
-                .name("user")
-                .email("user@mail.")
-                .build();
-
-        userDtoWithWrongEmailNoAt = UserDto.builder()
-                .name("user")
-                .email("user.mail.ru")
                 .build();
 
         correctOutgoingUserDto = UserDto.builder()
@@ -118,79 +87,9 @@ class UserControllerTest {
         usersList.add(correctUser);
         usersList.add(correctUser2);
 
-        usersListDto = new ArrayList<>();
+        List<UserDto> usersListDto = new ArrayList<>();
         usersListDto.add(correctOutgoingUserDto);
         usersListDto.add(correctOutgoingUserDto2);
-    }
-
-    @Test
-    void createUserWithoutNameTest() throws Exception {
-        String jsonUser = objectMapper.writeValueAsString(userDtoWithoutName);
-        mockMvc.perform(post("/users")
-                        .content(jsonUser)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-        verify(userService, never()).createUser(any(UserDto.class));
-    }
-
-    @Test
-    void createUserWithBlankNameTest() throws Exception {
-        String jsonUser = objectMapper.writeValueAsString(userDtoWithBlankName);
-        mockMvc.perform(post("/users")
-                        .content(jsonUser)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-        verify(userService, never()).createUser(any(UserDto.class));
-    }
-
-    @Test
-    void createUserWithoutEmailTest() throws Exception {
-        String jsonUser = objectMapper.writeValueAsString(userDtoWithoutEmail);
-        mockMvc.perform(post("/users")
-                        .content(jsonUser)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-        verify(userService, never()).createUser(any(UserDto.class));
-    }
-
-    @Test
-    void createUserWithWrongEmailTest() throws Exception {
-        String jsonUser = objectMapper.writeValueAsString(userDtoWithWrongEmail);
-        mockMvc.perform(post("/users")
-                        .content(jsonUser)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-        verify(userService, never()).createUser(any(UserDto.class));
-    }
-
-    @Test
-    void createUserWithWrongEmailNoDomainSecondLevelTest() throws Exception {
-        String jsonUser = objectMapper.writeValueAsString(userDtoWithWrongEmailNoDomainSecondLevel);
-        mockMvc.perform(post("/users")
-                        .content(jsonUser)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-        verify(userService, never()).createUser(any(UserDto.class));
-    }
-
-    @Test
-    void createUserWithWrongEmailNoDomainFirstLevelTest() throws Exception {
-        String jsonUser = objectMapper.writeValueAsString(userDtoWithWrongEmailNoDomainFirstLevel);
-        mockMvc.perform(post("/users")
-                        .content(jsonUser)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-        verify(userService, never()).createUser(any(UserDto.class));
-    }
-
-    @Test
-    void createUserWithWrongEmailNoAtTest() throws Exception {
-        String jsonUser = objectMapper.writeValueAsString(userDtoWithWrongEmailNoAt);
-        mockMvc.perform(post("/users")
-                        .content(jsonUser)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-        verify(userService, never()).createUser(any(UserDto.class));
     }
 
     @Test

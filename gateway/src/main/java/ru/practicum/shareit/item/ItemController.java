@@ -5,8 +5,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
-import ru.practicum.shareit.itemDto.IncomingCommentDto;
-import ru.practicum.shareit.itemDto.IncomingItemDto;
+
 import ru.practicum.shareit.util.OnCreate;
 import ru.practicum.shareit.util.OnUpdate;
 

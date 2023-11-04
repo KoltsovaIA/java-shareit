@@ -1,7 +1,7 @@
 package ru.practicum.shareit.item.service;
 
-import ru.practicum.shareit.itemDto.IncomingCommentDto;
-import ru.practicum.shareit.itemDto.IncomingItemDto;
+import ru.practicum.shareit.item.dto.IncomingCommentDto;
+import ru.practicum.shareit.item.dto.IncomingItemDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.OutgoingCommentDto;
 

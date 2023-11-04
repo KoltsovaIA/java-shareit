@@ -5,7 +5,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
-import ru.practicum.shareit.userDto.UserDto;
 import ru.practicum.shareit.util.OnCreate;
 import ru.practicum.shareit.util.OnUpdate;
 

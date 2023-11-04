@@ -10,7 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.item.dto.ShortItemDto;
 import ru.practicum.shareit.request.ItemRequestController;
-import ru.practicum.shareit.requestDto.IncomingItemRequestDto;
+import ru.practicum.shareit.request.dto.IncomingItemRequestDto;
 import ru.practicum.shareit.request.dto.OutgoingItemRequestDto;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.service.ItemRequestService;
@@ -44,8 +44,6 @@ class ItemRequestControllerTest {
     private static ItemRequest request;
     private static IncomingItemRequestDto incomingItemRequestDto;
     private static OutgoingItemRequestDto outgoingItemRequestDto;
-    private static ItemRequest requestWithBlankDescription;
-    private static ItemRequest requestWithDescriptionSize555;
     private static List<OutgoingItemRequestDto> requestsListDto;
     public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
@@ -86,20 +84,6 @@ class ItemRequestControllerTest {
                 .items(items)
                 .build();
 
-        requestWithBlankDescription = ItemRequest.builder()
-                .id(1L)
-                .description(" ")
-                .created(LocalDateTime.now())
-                .requester(requester)
-                .build();
-
-        requestWithDescriptionSize555 = ItemRequest.builder()
-                .id(1L)
-                .description("D".repeat(555))
-                .created(LocalDateTime.now())
-                .requester(requester)
-                .build();
-
         requestsListDto = new ArrayList<>();
         requestsListDto.add(outgoingItemRequestDto);
     }
@@ -113,32 +97,6 @@ class ItemRequestControllerTest {
                         .content(jsonRequest)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError());
-        verify(requestService, never()).createItemRequest(anyLong(), any(IncomingItemRequestDto.class));
-    }
-
-    @Test
-    void createItemRequestWithBlankDescriptionTest() throws Exception {
-        when(requestService.createItemRequest(anyLong(), any(IncomingItemRequestDto.class)))
-                .thenReturn(outgoingItemRequestDto);
-        String jsonRequest = objectMapper.writeValueAsString(requestWithBlankDescription);
-        mockMvc.perform(post("/requests")
-                        .header(USER_ID_HEADER, "1")
-                        .content(jsonRequest)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-        verify(requestService, never()).createItemRequest(anyLong(), any(IncomingItemRequestDto.class));
-    }
-
-    @Test
-    void createItemRequestWithDescriptionSize555Test() throws Exception {
-        when(requestService.createItemRequest(anyLong(), any(IncomingItemRequestDto.class)))
-                .thenReturn(outgoingItemRequestDto);
-        String jsonRequest = objectMapper.writeValueAsString(requestWithDescriptionSize555);
-        mockMvc.perform(post("/requests")
-                        .header(USER_ID_HEADER, "1")
-                        .content(jsonRequest)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
         verify(requestService, never()).createItemRequest(anyLong(), any(IncomingItemRequestDto.class));
     }
 
