@@ -31,7 +31,6 @@ public class BookingController {
                                                 @StartBeforeEndDateValid(message =
                                                         "Дата окончания не может быть раньше или равна дате начала")
                                                 IncomingBookingDto incomingBookingDto) {
-
         return bookingClient.createBooking(bookerId, incomingBookingDto);
     }
 
